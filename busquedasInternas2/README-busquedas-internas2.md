@@ -83,5 +83,5 @@ En `MainMenuView.java` se utiliza Nimbus Look and Feel junto con configuraciones
 ## Autores
 
 - Nelson David Posso Suárez (20212020132)
-- 
+- Alicia Pineda Quiroga (20222020047)
 - 
