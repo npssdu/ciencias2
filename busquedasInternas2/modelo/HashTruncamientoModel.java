@@ -8,11 +8,16 @@ public class HashTruncamientoModel extends HashModel {
 
     @Override
     protected int calcularHash(String clave) {
-        int digitos = String.valueOf(tamanoTabla - 1).length();
-        String truncada = (clave.length() > digitos) ? clave.substring(clave.length() - digitos) : clave;
+        int intervalo = String.valueOf(tamanoTabla).length() - 1;
+        StringBuilder truncada = new StringBuilder();
+
+        for (int i = 0; i < clave.length(); i += intervalo) {
+            truncada.append(clave.charAt(i));
+        }
+
         try {
-            int num = Integer.parseInt(truncada);
-            return num % tamanoTabla;
+            int num = Integer.parseInt(truncada.toString());
+            return (num + 1) % tamanoTabla;
         } catch (NumberFormatException e) {
             return -1;
         }
