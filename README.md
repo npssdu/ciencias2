@@ -7,14 +7,14 @@
 La aplicación de Búsquedas Internas permite utilizar los siguientes algoritmos y funciones:
 
 - **Algoritmos de Búsqueda:**
-  - **Búsqueda Lineal:** Inserción, actualización, eliminación y búsqueda de claves en un arreglo.
-  - **Búsqueda Binaria:** Inserción ordenada (de valores numéricos), actualización, eliminación y búsqueda utilizando búsqueda binaria.
+  - **Búsqueda Lineal**
+  - **Búsqueda Binaria**
 
 - **Funciones Hash:**
-  - **Hash Mod:** Aplica el operador módulo sobre la clave numérica.
-  - **Hash Cuadrado:** Eleva al cuadrado la clave numérica y utiliza el módulo.
-  - **Hash Plegamiento:** Divide la clave en dos partes iguales (o casi iguales), suma ambas partes y aplica el módulo.
-  - **Hash Truncamiento:** Trunca los dígitos de la clave según el tamaño de la estructura y aplica el módulo.
+  - **Hash Mod**
+  - **Hash Cuadrado**
+  - **Hash Plegamiento**
+  - **Hash Truncamiento**
 
 
 ## Tecnologías Utilizadas
