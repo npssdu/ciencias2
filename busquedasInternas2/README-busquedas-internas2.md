@@ -2,42 +2,86 @@
 
 Este proyecto es una aplicación de escritorio desarrollada en Java que integra diferentes algoritmos y funciones mediante una interfaz gráfica (GUI) utilizando Swing. La aplicación presenta un menú inicial que permite al usuario seleccionar entre distintos métodos y funciones para trabajar con estructuras de datos, donde cada opción despliega una ventana emergente con operaciones CRUD.
 
+
 ## Funcionalidades
 
-La aplicación ofrece las siguientes funcionalidades:
+### Menú Principal
+- **Selección del método:**  
+  Permite elegir entre:
+  - Búsqueda Lineal
+  - Búsqueda Binaria
+  - Hash Mod
+  - Hash Cuadrado
+  - Hash Plegamiento
+  - Hash Truncamiento
 
-- **Menú Inicial:**
-  - Selección de método o función.
-  - Entrada del tamaño de la estructura (tabla o arreglo).
+- **Tamaño de la estructura:**  
+  El usuario ingresa el tamaño de la tabla o arreglo a utilizar.  
+- **Interfaz de inicio:**  
+  Al presionar "Iniciar", se abre la ventana correspondiente al método seleccionado.
 
-- **Algoritmos de Búsqueda:**
-  - **Búsqueda Lineal:** Inserción, actualización, eliminación y búsqueda de claves en un arreglo.
-  - **Búsqueda Binaria:** Inserción ordenada (de valores numéricos), actualización, eliminación y búsqueda utilizando búsqueda binaria.
+### Búsqueda Lineal
+- Se utiliza un arreglo de tamaño fijo.
+- Permite realizar operaciones CRUD: Insertar, Actualizar, Eliminar, Buscar y Reiniciar.
+- Al insertar, se muestra un mensaje indicando la clave, el índice de inserción y que, al ser una inserción secuencial, no se detectan colisiones.
 
-- **Funciones Hash:**
-  - **Hash Mod:** Aplica el operador módulo sobre la clave numérica.
-  - **Hash Cuadrado:** Eleva al cuadrado la clave numérica y utiliza el módulo.
-  - **Hash Plegamiento:** Divide la clave en dos partes iguales (o casi iguales), suma ambas partes y aplica el módulo.
-  - **Hash Truncamiento:** Trunca los dígitos de la clave según el tamaño de la estructura y aplica el módulo.
+### Búsqueda Binaria
+- Se usa un `ArrayList` que se mantiene ordenado.
+- Implementa la búsqueda binaria para localizar claves de forma eficiente.
+- También permite las operaciones CRUD sobre la estructura.
 
-- **Operaciones CRUD y Reinicio:**
-  - Cada ventana permite insertar claves, actualizar, eliminar y reiniciar la estructura.
-  - Se muestra una tabla actualizada con tres columnas: **Índice**, **Clave(s)** y **Colisiones** (indicando si existen múltiples claves en el mismo índice).
+### Funciones Hash
+Cada función hash extiende una clase abstracta `HashModel` y se implementa de la siguiente manera:
+- **Hash Mod:** Utiliza el módulo de la clave numérica.
+- **Hash Cuadrado:** Eleva la clave al cuadrado y aplica el módulo.
+- **Hash Plegamiento:** Divide la clave en dos partes y suma los valores resultantes antes de aplicar el módulo.
+- **Hash Truncamiento:** Trunca los dígitos de la clave según el tamaño de la tabla y aplica el módulo.
+
+En cada ventana de funciones hash se muestra un mensaje emergente indicando:
+- La clave insertada.
+- El índice donde se insertó.
+- Si se produjo una colisión (cuando hay más de una clave en el mismo índice).
+
+### Interfaz Gráfica
+- La interfaz se ha desarrollado utilizando Swing.
+- Se ha mejorado la apariencia visual de la ventana principal (MainMenuView) mediante:
+  - Uso del Look and Feel Nimbus.
+  - Personalización de fuentes y colores.
+  - Aplicación de márgenes y paddings para un diseño más moderno.
+- Cada ventana emergente (vista) para cada método presenta controles CRUD y una tabla para visualizar el estado actual de la estructura.
+
+## Uso de la Aplicación
+
+1. **Menú principal:**
+  - Selecciona el método deseado del desplegable.
+  - Ingresa el tamaño de la estructura.
+  - Presiona "Iniciar" para abrir la ventana correspondiente.
+
+2. **Ventanas de Operación:**
+  - Realiza operaciones CRUD (Insertar, Actualizar, Eliminar, Buscar y Reiniciar) en la ventana emergente.
+  - En el caso de las funciones hash, al insertar se mostrará un mensaje indicando la clave, el índice de inserción y si se detectó colisión.
+  - La tabla se actualiza en tiempo real para reflejar el estado actual de la estructura.
+
+## Personalización Visual
+
+En `MainMenuView.java` se utiliza Nimbus Look and Feel junto con configuraciones específicas para:
+
+- Fuentes: Se utiliza la fuente "Arial" con distintos estilos y tamaños.
+- Colores: Se han aplicado colores personalizados a etiquetas y botones para mejorar la experiencia visual.
+
+## Requisitos
+
+- **Java JDK 8 o superior**
+- Un IDE de Java (Visual Studio Code, Eclipse, IntelliJ IDEA, NetBeans, etc.) o compilación desde línea de comandos.
 
 ## Tecnologías Utilizadas
 
 - **Lenguaje:** Java
 - **Interfaz Gráfica:** Swing
 
-## Requisitos
 
-- Java Development Kit (JDK) 8 o superior.
+## Autores
 
-## Cómo Compilar y Ejecutar
-
-1. **Clonar o descargar el repositorio.**
-
-2. **Compilar el código:**
-   Abre una terminal en el directorio donde se encuentre el archivo `MainMenu.java` (o el archivo fuente principal) y ejecuta:
-   ```bash
-   javac MainMenu.java
+- Nelson David Posso Suárez (20212020132)
+- 
+- 
