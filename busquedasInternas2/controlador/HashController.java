@@ -20,6 +20,7 @@ public class HashController {
         view.getBtnInsert().addActionListener(e -> insertar());
         view.getBtnUpdate().addActionListener(e -> actualizar());
         view.getBtnDelete().addActionListener(e -> eliminar());
+        view.getBtnBuscar().addActionListener(e -> buscar());
         view.getBtnReset().addActionListener(e -> reiniciar());
         actualizarTabla();
     }
@@ -64,6 +65,19 @@ public class HashController {
         JOptionPane.showMessageDialog(view, "Clave '" + clave + "' eliminada.");
         view.setTxtDelete("");
         actualizarTabla();
+    }
+
+    private void buscar() {
+        String clave = view.getTxtBuscar();
+        if (clave.isEmpty())
+            return;
+        int indice = model.buscar(clave);
+        if (indice != -1) {
+            JOptionPane.showMessageDialog(view, "Clave '" + clave + "' encontrada en el índice " + indice);
+        } else {
+            JOptionPane.showMessageDialog(view, "Clave no encontrada.");
+        }
+        view.setTxtBuscar("");
     }
 
     private void reiniciar() {

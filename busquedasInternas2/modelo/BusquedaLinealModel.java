@@ -42,6 +42,15 @@ public class BusquedaLinealModel {
         return false;
     }
 
+    public int buscar(String clave) {
+        for (int i = 0; i < estructura.length; i++) {
+            if (clave.equals(estructura[i])) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public void reiniciar() {
         for (int i = 0; i < estructura.length; i++) {
             estructura[i] = null;

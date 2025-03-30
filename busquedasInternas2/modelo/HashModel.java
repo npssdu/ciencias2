@@ -18,7 +18,7 @@ public abstract class HashModel {
     // Método abstracto para calcular el índice
     protected abstract int calcularHash(String clave);
 
-    // Método público para obtener el índice sin insertar
+    // Obtiene el índice sin insertar
     public int getIndiceDeInsercion(String clave) {
         return calcularHash(clave);
     }
@@ -33,6 +33,16 @@ public abstract class HashModel {
 
     public ArrayList<String>[] getTabla() {
         return tabla;
+    }
+
+    // Método de búsqueda: recorre toda la tabla para encontrar la clave
+    public int buscar(String clave) {
+        for (int i = 0; i < tamanoTabla; i++) {
+            if (tabla[i].contains(clave)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public void actualizar(String claveAntigua, String claveNueva) {
@@ -60,7 +70,7 @@ public abstract class HashModel {
             tabla[i].clear();
         }
     }
-    
+
     public int getTamanoTabla() {
         return tamanoTabla;
     }

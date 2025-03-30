@@ -5,8 +5,8 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
 public abstract class HashView extends JFrame {
-    protected JTextField txtInsert, txtUpdateOld, txtUpdateNew, txtDelete;
-    protected JButton btnInsert, btnUpdate, btnDelete, btnReset;
+    protected JTextField txtInsert, txtUpdateOld, txtUpdateNew, txtDelete, txtBuscar;
+    protected JButton btnInsert, btnUpdate, btnDelete, btnBuscar, btnReset;
     protected JTable table;
     protected DefaultTableModel tableModel;
 
@@ -42,6 +42,14 @@ public abstract class HashView extends JFrame {
         panelControls.add(btnDelete);
         panelControls.add(new JLabel(""));
 
+        // Buscar
+        panelControls.add(new JLabel("Buscar clave:"));
+        txtBuscar = new JTextField();
+        panelControls.add(txtBuscar);
+        btnBuscar = new JButton("Buscar");
+        panelControls.add(btnBuscar);
+        panelControls.add(new JLabel(""));
+
         // Reiniciar
         btnReset = new JButton("Reiniciar");
         panelControls.add(btnReset);
@@ -62,15 +70,18 @@ public abstract class HashView extends JFrame {
     public String getTxtUpdateOld() { return txtUpdateOld.getText().trim(); }
     public String getTxtUpdateNew() { return txtUpdateNew.getText().trim(); }
     public String getTxtDelete() { return txtDelete.getText().trim(); }
+    public String getTxtBuscar() { return txtBuscar.getText().trim(); }
 
     public void setTxtInsert(String text) { txtInsert.setText(text); }
     public void setTxtUpdateOld(String text) { txtUpdateOld.setText(text); }
     public void setTxtUpdateNew(String text) { txtUpdateNew.setText(text); }
     public void setTxtDelete(String text) { txtDelete.setText(text); }
+    public void setTxtBuscar(String text) { txtBuscar.setText(text); }
 
     public JButton getBtnInsert() { return btnInsert; }
     public JButton getBtnUpdate() { return btnUpdate; }
     public JButton getBtnDelete() { return btnDelete; }
+    public JButton getBtnBuscar() { return btnBuscar; }
     public JButton getBtnReset() { return btnReset; }
     public DefaultTableModel getTableModel() { return tableModel; }
     public JTable getTable() { return table; }

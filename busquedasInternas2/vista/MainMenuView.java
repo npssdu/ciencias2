@@ -21,7 +21,7 @@ public class MainMenuView extends JFrame {
             System.err.println("No se pudo aplicar Nimbus Look and Feel");
         }
 
-        setTitle("Menú de Algoritmos y Funciones");
+        setTitle("Menú Busquedas Internas");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
         // Panel principal con márgenes

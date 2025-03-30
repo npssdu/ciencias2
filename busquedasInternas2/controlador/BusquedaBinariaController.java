@@ -21,7 +21,7 @@ public class BusquedaBinariaController {
         view.getBtnInsert().addActionListener(e -> insertar());
         view.getBtnUpdate().addActionListener(e -> actualizar());
         view.getBtnDelete().addActionListener(e -> eliminar());
-        view.getBtnSearch().addActionListener(e -> buscar());
+        view.getBtnBuscar().addActionListener(e -> buscar());
         view.getBtnReset().addActionListener(e -> reiniciar());
         actualizarTabla();
     }
@@ -31,7 +31,8 @@ public class BusquedaBinariaController {
             int clave = Integer.parseInt(view.getTxtInsert());
             if (model.insertar(clave)) {
                 int index = model.getLista().indexOf(clave);
-                JOptionPane.showMessageDialog(view, "Clave '" + clave + "' insertada en el índice " + index);
+                String mensaje = "Clave '" + clave + "' insertada en el índice " + index + " (Sin colisión)";
+                JOptionPane.showMessageDialog(view, mensaje);
             } else {
                 JOptionPane.showMessageDialog(view, "Estructura llena.");
             }
@@ -76,26 +77,17 @@ public class BusquedaBinariaController {
 
     private void buscar() {
         try {
-            int clave = Integer.parseInt(view.getTxtSearch());
-            int low = 0, high = model.getLista().size() - 1;
-            while (low <= high) {
-                int mid = (low + high) / 2;
-                int midVal = model.getLista().get(mid);
-                if (midVal < clave)
-                    low = mid + 1;
-                else if (midVal > clave)
-                    high = mid - 1;
-                else {
-                    JOptionPane.showMessageDialog(view, "Clave encontrada en el índice " + mid);
-                    view.setTxtSearch("");
-                    return;
-                }
+            int clave = Integer.parseInt(view.getTxtBuscar());
+            int indice = model.buscar(clave);
+            if (indice != -1) {
+                JOptionPane.showMessageDialog(view, "Clave '" + clave + "' encontrada en el índice " + indice);
+            } else {
+                JOptionPane.showMessageDialog(view, "Clave no encontrada.");
             }
-            JOptionPane.showMessageDialog(view, "Clave no encontrada.");
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(view, "Ingrese un valor numérico.");
         }
-        view.setTxtSearch("");
+        view.setTxtBuscar("");
     }
 
     private void reiniciar() {

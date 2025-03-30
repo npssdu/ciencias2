@@ -42,6 +42,22 @@ public class BusquedaBinariaModel {
         return false;
     }
 
+    public int buscar(int clave) {
+        // Se implementa la búsqueda binaria
+        int low = 0, high = lista.size() - 1;
+        while (low <= high) {
+            int mid = (low + high) / 2;
+            int midVal = lista.get(mid);
+            if (midVal < clave)
+                low = mid + 1;
+            else if (midVal > clave)
+                high = mid - 1;
+            else
+                return mid;
+        }
+        return -1;
+    }
+
     public void reiniciar() {
         lista.clear();
     }

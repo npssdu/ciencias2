@@ -21,7 +21,7 @@ public class BusquedaLinealController {
         view.getBtnInsert().addActionListener(e -> insertar());
         view.getBtnUpdate().addActionListener(e -> actualizar());
         view.getBtnDelete().addActionListener(e -> eliminar());
-        view.getBtnSearch().addActionListener(e -> buscar());
+        view.getBtnBuscar().addActionListener(e -> buscar());
         view.getBtnReset().addActionListener(e -> reiniciar());
         actualizarTabla();
     }
@@ -33,9 +33,8 @@ public class BusquedaLinealController {
         boolean exito = model.insertar(clave);
         if (exito) {
             int indice = model.getUltimoIndiceInsertado();
-            String mensaje = "Clave '" + clave + "' insertada en el índice " + indice;
-            // En búsqueda lineal no se tiene “colisión” ya que cada inserción es secuencial
-            mensaje += " (Sin colisión)";
+            // En búsqueda lineal cada inserción es secuencial, sin colisiones
+            String mensaje = "Clave '" + clave + "' insertada en el índice " + indice + " (Sin colisión)";
             JOptionPane.showMessageDialog(view, mensaje);
         } else {
             JOptionPane.showMessageDialog(view, "Estructura llena.");
@@ -77,17 +76,14 @@ public class BusquedaLinealController {
     }
 
     private void buscar() {
-        String clave = view.getTxtSearch();
-        String[] estructura = model.getEstructura();
-        for (int i = 0; i < estructura.length; i++) {
-            if (clave.equals(estructura[i])) {
-                JOptionPane.showMessageDialog(view, "Clave encontrada en el índice " + i);
-                view.setTxtSearch("");
-                return;
-            }
+        String clave = view.getTxtBuscar();
+        int indice = model.buscar(clave);
+        if (indice != -1) {
+            JOptionPane.showMessageDialog(view, "Clave '" + clave + "' encontrada en el índice " + indice);
+        } else {
+            JOptionPane.showMessageDialog(view, "Clave no encontrada.");
         }
-        JOptionPane.showMessageDialog(view, "Clave no encontrada.");
-        view.setTxtSearch("");
+        view.setTxtBuscar("");
     }
 
     private void reiniciar() {
