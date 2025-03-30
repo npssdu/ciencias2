@@ -27,6 +27,6 @@ public class HashPlegamientoModel extends HashModel {
                 return -1;
             }
         }
-        return suma % tamanoTabla;
+        return suma % tamanoTabla + 1;
     }
 }
