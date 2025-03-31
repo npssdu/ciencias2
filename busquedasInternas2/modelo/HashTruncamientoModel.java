@@ -1,6 +1,6 @@
 package busquedasInternas2.modelo;
 
-public class HashTruncamientoModel extends HashModel {
+public class HashTruncamientoModel extends HashModel { // Cambiar de nuevo función truncamiento
 
     public HashTruncamientoModel(int tamanoTabla) {
         super(tamanoTabla);
