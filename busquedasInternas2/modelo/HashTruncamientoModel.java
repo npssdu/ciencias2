@@ -14,7 +14,7 @@ public class HashTruncamientoModel extends HashModel {
         for (int i = 0; i < clave.length(); i += intervalo) {
             truncada.append(clave.charAt(i));
         }
-
+ 
         try {
             int num = Integer.parseInt(truncada.toString());
             return (num + 1) % tamanoTabla;
