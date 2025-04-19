@@ -27,8 +27,8 @@ public class ArbolesBDigitalesController {
         }
 
         // Establecer el número de bits custom en base a la longitud de la palabra.
-        int customBits = (palabra.length() - 1) > 0 ? (palabra.length() - 1) : 1;
-        model.setCustomBits(customBits);
+        int customBits = 5;
+        // model.setCustomBits(customBits);
         // También se ajusta el panel de dibujo para mejorar el espaciado.
         view.setWordLength(palabra.length());
 

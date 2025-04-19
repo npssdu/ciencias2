@@ -22,10 +22,10 @@ public class ArbolesBDigitalesModel {
         root = null;
     }
 
-    // Método para establecer la cantidad de bits custom, calculado como (wordLength - 1)
-    public void setCustomBits(int bits) {
-        this.customBits = bits > 0 ? bits : 1;
-    }
+    //Metodo para establecer la cantidad de bits custom, calculado como (wordLength - 1)
+    //public void setCustomBits(int bits) {
+    //    this.customBits = bits > 0 ? bits : 1;
+    //}
 
     // Retorna la raíz del árbol.
     public Node getRoot() {
