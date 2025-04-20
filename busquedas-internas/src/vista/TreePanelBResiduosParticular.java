@@ -8,161 +8,140 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TreePanelBResiduosParticular extends JPanel {
-
-    private ArbolesBResiduosParticularModel model;
-    private Map<ArbolesBResiduosParticularModel.Node, Point> nodePositions = new HashMap<>();
+    private final ArbolesBResiduosParticularModel model;
+    private final Map<ArbolesBResiduosParticularModel.Node, Point> positions = new HashMap<>();
     private int wordLength = 0;
 
-    // Zoom y panning
+    // Zoom & pan
     private double scale = 1.0;
     private int panX = 0, panY = 0;
-    private Point lastDragPoint = null;
+    private Point lastPan = null;
 
-    // Arrastre de nodos
-    private ArbolesBResiduosParticularModel.Node draggedNode = null;
-    private Point dragOffset = new Point(0, 0);
+    // Drag nodos
+    private ArbolesBResiduosParticularModel.Node dragged = null;
+    private Point dragOff = new Point();
 
     public TreePanelBResiduosParticular(ArbolesBResiduosParticularModel model) {
         this.model = model;
         setBackground(Color.WHITE);
 
-        MouseAdapter ma = new MouseAdapter() {
-            @Override
+        // Mouse
+        addMouseWheelListener(e -> {
+            double d = 1 - 0.1 * e.getWheelRotation();
+            scale = Math.max(0.1, Math.min(scale * d, 5));
+            repaint();
+        });
+        addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    lastDragPoint = e.getPoint();
-                    return;
-                }
-                Point clickPoint = e.getPoint();
-                Point transformed = new Point((int)((clickPoint.x - panX)/scale),
-                        (int)((clickPoint.y - panY)/scale));
-                for(Map.Entry<ArbolesBResiduosParticularModel.Node, Point> entry : nodePositions.entrySet()){
-                    Point pos = entry.getValue();
-                    int radius = 15;
-                    if (transformed.distance(pos) <= radius) {
-                        draggedNode = entry.getKey();
-                        dragOffset.x = transformed.x - pos.x;
-                        dragOffset.y = transformed.y - pos.y;
-                        break;
-                    }
-                }
-            }
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                draggedNode = null;
-                lastDragPoint = null;
-            }
-        };
-        addMouseListener(ma);
-
-        addMouseMotionListener(new MouseMotionAdapter(){
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                if(SwingUtilities.isRightMouseButton(e)){
-                    if(lastDragPoint != null){
-                        int dx = e.getX() - lastDragPoint.x;
-                        int dy = e.getY() - lastDragPoint.y;
-                        panX += dx;
-                        panY += dy;
-                        lastDragPoint = e.getPoint();
-                        repaint();
-                    }
+                    lastPan = e.getPoint();
                 } else {
-                    if(draggedNode != null){
-                        Point newPoint = new Point((int)((e.getX()-panX)/scale - dragOffset.x),
-                                (int)((e.getY()-panY)/scale - dragOffset.y));
-                        nodePositions.put(draggedNode, newPoint);
-                        repaint();
+                    Point pt = transformPoint(e.getPoint());
+                    for (var entry : positions.entrySet()) {
+                        if (pt.distance(entry.getValue()) < 15) {
+                            dragged = entry.getKey();
+                            dragOff.x = pt.x - entry.getValue().x;
+                            dragOff.y = pt.y - entry.getValue().y;
+                            break;
+                        }
                     }
                 }
+            }
+            public void mouseReleased(MouseEvent e) {
+                dragged = null;
+                lastPan = null;
             }
         });
-
-        addMouseWheelListener(e -> {
-            double delta = 0.05 * e.getWheelRotation();
-            scale -= delta;
-            if(scale < 0.1) scale = 0.1;
-            if(scale > 5) scale = 5;
-            repaint();
+        addMouseMotionListener(new MouseMotionAdapter() {
+            public void mouseDragged(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e) && lastPan!=null) {
+                    panX += e.getX() - lastPan.x;
+                    panY += e.getY() - lastPan.y;
+                    lastPan = e.getPoint();
+                    repaint();
+                } else if (dragged!=null) {
+                    Point pt = transformPoint(e.getPoint());
+                    positions.put(dragged, new Point(pt.x - dragOff.x, pt.y - dragOff.y));
+                    repaint();
+                }
+            }
         });
     }
 
-    public void setWordLength(int length) {
-        this.wordLength = length;
+    /** Ajusta el espaciado según n letras */
+    public void setWordLength(int n) {
+        this.wordLength = n;
     }
 
     @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        Graphics2D g2 = (Graphics2D) g;
-        g2.translate(panX, panY);
-        g2.scale(scale, scale);
-
+    protected void paintComponent(Graphics _g) {
+        super.paintComponent(_g);
+        Graphics2D g = (Graphics2D)_g;
+        g.translate(panX, panY);
+        g.scale(scale, scale);
         ArbolesBResiduosParticularModel.Node root = model.getRoot();
         if (root != null) {
-            int initialXOffset = Math.max(getWidth()/4, wordLength * 30);
-            drawTree(g2, root, getWidth()/2, 50, 80, initialXOffset);
+            int initialOffset = Math.max(getWidth()/4, wordLength*30);
+            drawNode(g, root, getWidth()/2, 40, initialOffset, 80);
         }
     }
 
-    private void drawTree(Graphics g, ArbolesBResiduosParticularModel.Node node, int x, int y, int yOffset, int xOffset) {
-        Point pos = nodePositions.get(node);
-        if (pos == null) {
+    /** Transformación de pantalla->lógica */
+    private Point transformPoint(Point p) {
+        return new Point(
+                (int)((p.x - panX)/scale),
+                (int)((p.y - panY)/scale)
+        );
+    }
+
+    /**
+     * Dibuja recursivamente cada nodo y sus enlaces (0=izq-azul, 1=der-rojo).
+     * No usa lambdas para evitar ese error de variable final.
+     */
+    private void drawNode(Graphics2D g,
+                          ArbolesBResiduosParticularModel.Node node,
+                          int x, int y,
+                          int xOffset, int yOffset) {
+        // posición
+        Point pos = positions.get(node);
+        if (pos==null) {
             pos = new Point(x, y);
-            nodePositions.put(node, pos);
+            positions.put(node, pos);
         } else {
             x = pos.x;
             y = pos.y;
         }
-        int radius = 15;
-        g.setColor(Color.BLACK);
-        g.fillOval(x - radius, y - radius, radius*2, radius*2);
-        Font boldFont = new Font("Arial", Font.BOLD, 16);
-        g.setFont(boldFont);
-        g.setColor(Color.WHITE);
-        String text = (node.data == null ? "" : node.data.toString());
-        FontMetrics fm = g.getFontMetrics();
-        int textWidth = fm.stringWidth(text);
-        int textHeight = fm.getAscent();
-        g.drawString(text, x - textWidth/2, y + textHeight/4);
 
-        if (node.left != null) {
-            int childX = x - xOffset;
-            int childY = y + yOffset;
-            Point leftPos = nodePositions.get(node.left);
-            if (leftPos == null) {
-                leftPos = new Point(childX, childY);
-                nodePositions.put(node.left, leftPos);
-            } else {
-                childX = leftPos.x;
-                childY = leftPos.y;
-            }
-            g.setColor(Color.BLUE);
-            g.drawLine(x, y, childX, childY);
-            int midX = (x + childX) / 2;
-            int midY = (y + childY) / 2;
-            g.setFont(new Font("Arial", Font.BOLD, 12));
-            g.drawString("0", midX - 5, midY - 5);
-            drawTree(g, node.left, childX, childY, yOffset, xOffset/2);
+        // nodo
+        g.setColor(Color.BLACK);
+        g.fillOval(x-15, y-15, 30, 30);
+        g.setFont(new Font("Arial", Font.BOLD, 16));
+        g.setColor(Color.WHITE);
+        if (node.data!=null) {
+            String s = node.data.toString();
+            FontMetrics fm = g.getFontMetrics();
+            g.drawString(s, x - fm.stringWidth(s)/2, y + fm.getAscent()/4);
         }
-        if (node.right != null) {
-            int childX = x + xOffset;
-            int childY = y + yOffset;
-            Point rightPos = nodePositions.get(node.right);
-            if (rightPos == null) {
-                rightPos = new Point(childX, childY);
-                nodePositions.put(node.right, rightPos);
-            } else {
-                childX = rightPos.x;
-                childY = rightPos.y;
-            }
-            g.setColor(Color.RED);
-            g.drawLine(x, y, childX, childY);
-            int midX = (x + childX) / 2;
-            int midY = (y + childY) / 2;
+
+        // hijo izquierdo
+        if (node.left!=null) {
+            Point c = positions.getOrDefault(node.left, new Point(x-xOffset, y+yOffset));
+            positions.putIfAbsent(node.left, c);
+            g.setColor(Color.BLUE);
+            g.drawLine(x, y, c.x, c.y);
             g.setFont(new Font("Arial", Font.BOLD, 12));
-            g.drawString("1", midX - 5, midY - 5);
-            drawTree(g, node.right, childX, childY, yOffset, xOffset/2);
+            g.drawString("0", (x+c.x)/2 - 5, (y+c.y)/2 - 5);
+            drawNode(g, node.left, c.x, c.y, xOffset/2, yOffset);
+        }
+        // hijo derecho
+        if (node.right!=null) {
+            Point c = positions.getOrDefault(node.right, new Point(x+xOffset, y+yOffset));
+            positions.putIfAbsent(node.right, c);
+            g.setColor(Color.RED);
+            g.drawLine(x, y, c.x, c.y);
+            g.setFont(new Font("Arial", Font.BOLD, 12));
+            g.drawString("1", (x+c.x)/2 - 5, (y+c.y)/2 - 5);
+            drawNode(g, node.right, c.x, c.y, xOffset/2, yOffset);
         }
     }
 }

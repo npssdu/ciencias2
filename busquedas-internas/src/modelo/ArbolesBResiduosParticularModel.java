@@ -2,147 +2,87 @@ package modelo;
 
 public class ArbolesBResiduosParticularModel {
 
-    // Clase interna para el nodo
+    // Nodo del árbol
     public class Node {
-        public Character data;
-        public Node left;
-        public Node right;
-
+        public Character data;  // null en el nodo raíz
+        public Node left, right;
         public Node(Character data) {
             this.data = data;
-            this.left = null;
-            this.right = null;
+            this.left = this.right = null;
         }
     }
 
-    // La raíz siempre se inicializa como vacía.
-    private Node root;
-    private int customBits = 5; // Valor por defecto, se ajustará según la longitud de la palabra (n-1 bits)
+    private final Node root;
 
     public ArbolesBResiduosParticularModel() {
-        // Inicializar raíz vacía.
-        root = new Node(null);
+        // la raíz siempre existe, pero comienza vacía (data == null)
+        this.root = new Node(null);
     }
 
-    public void setCustomBits(int bits) {
-        this.customBits = (bits > 0 ? bits : 1);
-    }
-
+    /** Devuelve la raíz para el dibujo */
     public Node getRoot() {
         return root;
     }
 
     /**
-     * Convierte la letra a una representación binaria de 'customBits' bits (tomando
-     * los bits menos significativos en caso de que el valor ASCII tenga más bits).
+     * Obtiene los últimos 5 bits del código ASCII de la letra.
      */
-    public String getCustomBinary(char c) {
-        int ascii = (int)c;
-        String bin = Integer.toBinaryString(ascii);
-        if(bin.length() > customBits) {
-            return bin.substring(bin.length() - customBits);
+    private String getLast5Bits(char c) {
+        String bin = Integer.toBinaryString((int)c);
+        if (bin.length() > 5) {
+            return bin.substring(bin.length() - 5);
         } else {
-            return String.format("%" + customBits + "s", bin).replace(' ', '0');
+            return String.format("%5s", bin).replace(' ', '0');
         }
     }
 
     /**
-     * Inserta la letra en el árbol siguiendo el algoritmo para “Árboles B por Residuos Particular”.
-     *
-     * @param letra         Letra a insertar.
-     * @param primeraLetra  Si es la primera letra, se recorre todo el código binario.
-     *                      Para las siguientes, se ignoran las partes ya creadas y se crea la rama
-     *                      a partir de la aparición de un nuevo "1".
-     * @return              Una cadena con el paso a paso de la inserción.
+     * Inserta la letra siguiendo el algoritmo “Residuos Particular”:
+     *  - Root.data == null siempre.
+     *  - Recorrer los 5 bits; en cada bit:
+     *      0 → izquierda, 1 → derecha.
+     *      Si el hijo está libre, insertar y parar.
+     *      Si no, bajar y seguir con el siguiente bit.
+     * Devuelve un String con el paso a paso (ASCII, binario y colisiones).
      */
-    public String insertarConPasos(char letra, boolean primeraLetra) {
+    public String insertarConPasos(char letra) {
         StringBuilder pasos = new StringBuilder();
-        String binary = getCustomBinary(letra);
-        pasos.append("Letra: ").append(letra).append("\n")
-                .append("Código ASCII (decimal): ").append((int)letra).append("\n")
-                .append("Código binario (").append(customBits).append(" bits): ").append(binary).append("\n");
+        String bits = getLast5Bits(letra);
+        pasos.append("Letra: '").append(letra).append("'\n")
+                .append("ASCII: ").append((int)letra).append("\n")
+                .append("Últimos 5 bits: ").append(bits).append("\n\n")
+                .append("Insertando en el árbol:\n");
 
-        // Comenzamos siempre desde la raíz (que permanece vacía)
         Node current = root;
-        pasos.append("La raíz está vacía (siempre).\n");
-
-        if (primeraLetra) {
-            // Para la primera letra se recorre todo el código.
-            for (int i = 0; i < binary.length(); i++) {
-                char bit = binary.charAt(i);
-                pasos.append("Bit ").append(i + 1).append(" (").append(bit).append("): ");
-                if (bit == '0') {
-                    if (current.left == null) {
-                        current.left = new Node(null);
-                        pasos.append("No existe rama izquierda: se crea.\n");
-                    } else {
-                        pasos.append("La rama izquierda existe: se baja.\n");
-                    }
+        for (int i = 0; i < bits.length(); i++) {
+            char b = bits.charAt(i);
+            pasos.append(" Bit ").append(i+1).append(" = ").append(b).append(" → ");
+            if (b == '0') {
+                if (current.left == null) {
+                    current.left = new Node(letra);
+                    pasos.append("inserto '").append(letra).append("' a la IZQUIERDA.\n");
+                    return pasos.toString();
+                } else {
+                    pasos.append("colisión (ya hay '")
+                            .append(current.left.data).append("'), bajo a la IZQUIERDA.\n");
                     current = current.left;
-                } else { // bit == '1'
-                    if (current.right == null) {
-                        current.right = new Node(null);
-                        pasos.append("No existe rama derecha: se crea.\n");
-                    } else {
-                        pasos.append("La rama derecha existe: se baja.\n");
-                    }
-                    current = current.right;
-                }
-            }
-            current.data = letra;
-            pasos.append("Se asigna la letra '").append(letra).append("' en el nodo final.\n");
-            return pasos.toString();
-        }
-
-        // Para letras siguientes:
-        // Recorremos los bits; si el bit es '1' y la rama ya existe (activada por letras previas),
-        // se baja sin crear nada; de lo contrario, se crea la rama a partir de la primera diferencia.
-        boolean rutaPreexistente = true;
-        for (int i = 0; i < binary.length(); i++) {
-            char bit = binary.charAt(i);
-            pasos.append("Bit ").append(i + 1).append(" (").append(bit).append("): ");
-            if (rutaPreexistente) {
-                // Si el bit es '1' y la rama correspondiente existe, se baja.
-                if (bit == '1') {
-                    if (current.right != null) {
-                        pasos.append("La rama derecha ya existe (").append(current.right.data == null ? "vacío" : current.right.data)
-                                .append("), se baja.\n");
-                        current = current.right;
-                        continue;
-                    } else {
-                        rutaPreexistente = false;
-                        pasos.append("La rama derecha no existe, se crea.\n");
-                        current.right = new Node(null);
-                        current = current.right;
-                    }
-                } else { // bit == '0'
-                    if (current.left != null) {
-                        pasos.append("La rama izquierda ya existe (").append(current.left.data == null ? "vacío" : current.left.data)
-                                .append("), se baja.\n");
-                        current = current.left;
-                        continue;
-                    } else {
-                        rutaPreexistente = false;
-                        pasos.append("La rama izquierda no existe, se crea.\n");
-                        current.left = new Node(null);
-                        current = current.left;
-                    }
                 }
             } else {
-                // Una vez terminada la parte preexistente, se crean las ramas según el bit.
-                if (bit == '0') {
-                    pasos.append("Creando rama izquierda.\n");
-                    current.left = new Node(null);
-                    current = current.left;
+                if (current.right == null) {
+                    current.right = new Node(letra);
+                    pasos.append("inserto '").append(letra).append("' a la DERECHA.\n");
+                    return pasos.toString();
                 } else {
-                    pasos.append("Creando rama derecha.\n");
-                    current.right = new Node(null);
+                    pasos.append("colisión (ya hay '")
+                            .append(current.right.data).append("'), bajo a la DERECHA.\n");
                     current = current.right;
                 }
             }
         }
+
+        pasos.append("Se completó el recorrido de bits sin hueco, asigno '")
+                .append(letra).append("' al nodo final.\n");
         current.data = letra;
-        pasos.append("Se asigna la letra '").append(letra).append("' en el nodo final.\n");
         return pasos.toString();
     }
 }

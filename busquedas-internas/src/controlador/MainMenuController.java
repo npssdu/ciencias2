@@ -29,6 +29,7 @@ public class MainMenuController {
         view.getBtnHashPlegamiento().addActionListener(e -> abrirHashPlegamiento());
         view.getBtnHashTruncamiento().addActionListener(e -> abrirHashTruncamiento());
 
+
         // Búsquedas por residuos
         view.getBtnArbolesBDigitales().addActionListener(e -> abrirArbolesBDigitales());
         view.getBtnArbolesBResiduosParticular().addActionListener(e -> abrirArbolesBResiduosParticular());
