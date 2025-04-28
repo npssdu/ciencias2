@@ -1,44 +1,43 @@
 package vista;
 
+import modelo.ArbolesHuffmanModel;
 import javax.swing.*;
 import java.awt.*;
 
 public class ArbolesHuffmanView extends JFrame {
     private JTextField txtPalabra;
-    private JButton btnCrearArbol;
-    private JTextArea areaArbol;
+    private JButton btnCrear;
+    private TreePanelHuffman treePanel;
 
-    public ArbolesHuffmanView() {
-        setTitle("Arboles de Huffman");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(600, 500);
+    public ArbolesHuffmanView(ArbolesHuffmanModel model) {
+        setTitle("Árboles de Huffman");
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setSize(900, 650);
         setLocationRelativeTo(null);
 
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        JPanel panelInput = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        panelInput.add(new JLabel("Ingrese palabra:"));
-        txtPalabra = new JTextField(15);
-        panelInput.add(txtPalabra);
-        btnCrearArbol = new JButton("Crear Árbol Huffman");
-        panelInput.add(btnCrearArbol);
-        mainPanel.add(panelInput, BorderLayout.NORTH);
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        top.add(new JLabel("Palabra:"));
+        txtPalabra = new JTextField(20);
+        top.add(txtPalabra);
+        btnCrear = new JButton("Crear Árbol Huffman");
+        top.add(btnCrear);
 
-        areaArbol = new JTextArea();
-        areaArbol.setEditable(false);
-        mainPanel.add(new JScrollPane(areaArbol), BorderLayout.CENTER);
+        setLayout(new BorderLayout());
+        add(top, BorderLayout.NORTH);
 
-        add(mainPanel);
+        treePanel = new TreePanelHuffman(model);
+        add(new JScrollPane(treePanel), BorderLayout.CENTER);
     }
 
     public String getPalabra() {
         return txtPalabra.getText().trim();
     }
 
-    public JButton getBtnCrearArbol() {
-        return btnCrearArbol;
+    public JButton getBtnCrear() {
+        return btnCrear;
     }
 
-    public void setAreaArbol(String texto) {
-        areaArbol.setText(texto);
+    public void repaintTree() {
+        treePanel.repaint();
     }
 }

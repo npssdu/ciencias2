@@ -3,14 +3,7 @@ package controlador;
 import javax.swing.JOptionPane;
 
 import modelo.*;
-import vista.MainMenuView;
-import vista.BusquedaLinealView;
-import vista.BusquedaBinariaView;
-import vista.HashModView;
-import vista.HashCuadradoView;
-import vista.HashPlegamientoView;
-import vista.HashTruncamientoView;
-import vista.ArbolesBDigitalesView;
+import vista.*;
 
 public class MainMenuController {
     private MainMenuView view;
@@ -118,7 +111,9 @@ public class MainMenuController {
 
     // --- Método para Árboles de Huffman ---
     private void abrirArbolesHuffman() {
-        JOptionPane.showMessageDialog(view, "Abriendo ventana para Árboles de Huffman.\n(Pendiente la implementación del algoritmo)");
+        ArbolesHuffmanModel m = new ArbolesHuffmanModel();
+        ArbolesHuffmanView v = new ArbolesHuffmanView(m);
+        new ArbolesHuffmanController(m, v);
     }
 
     // --- Métodos para Búsquedas por rangos ---
