@@ -5,96 +5,74 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
 public class BusquedaBinariaView extends JFrame {
-    private JTextField txtInsert, txtUpdateIndex, txtUpdateValue, txtDelete, txtBuscar;
-    private JButton btnInsert, btnUpdate, btnDelete, btnBuscar, btnReset;
-    private JTable table;
-    private DefaultTableModel tableModel;
+    private final JTextField txtTamano, txtClave;
+    private final JButton btnCrear, btnInsert, btnEliminar, btnBuscar, btnGuardar, btnImportar;
+    private final JTable table;
+    private final DefaultTableModel tableModel;
+    private final JTextArea terminal;
+    private final RowHighlighter highlighter;
 
     public BusquedaBinariaView() {
-        setTitle("Búsqueda Binaria");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(600, 400);
-        setLocationRelativeTo(null); // Centrar la ventana
+        super("Búsqueda Binaria");
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setSize(800, 600);
+        setLocationRelativeTo(null);
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        // Panel tamaño
+        JPanel pTop = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
+        pTop.add(new JLabel("Tamaño:"));
+        txtTamano = new JTextField(5);
+        pTop.add(txtTamano);
+        btnCrear = new JButton("Crear");
+        pTop.add(btnCrear);
 
-        // Panel de controles
-        JPanel panelControls = new JPanel();
-        panelControls.setLayout(new BoxLayout(panelControls, BoxLayout.Y_AXIS));
-
-        // Fila de Insertar
-        JPanel rowInsert = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
-        rowInsert.add(new JLabel("Insertar clave (numérica):"));
-        txtInsert = new JTextField(10);
-        rowInsert.add(txtInsert);
-        btnInsert = new JButton("Insertar");
-        rowInsert.add(btnInsert);
-        panelControls.add(rowInsert);
-
-        // Fila de Actualizar
-        JPanel rowActualizar = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
-        rowActualizar.add(new JLabel("Actualizar índice:"));
-        txtUpdateIndex = new JTextField(5);
-        rowActualizar.add(txtUpdateIndex);
-        rowActualizar.add(new JLabel("Nuevo valor:"));
-        txtUpdateValue = new JTextField(10);
-        rowActualizar.add(txtUpdateValue);
-        btnUpdate = new JButton("Actualizar");
-        rowActualizar.add(btnUpdate);
-        panelControls.add(rowActualizar);
-
-        // Fila de Eliminar
-        JPanel rowEliminar = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
-        rowEliminar.add(new JLabel("Eliminar índice:"));
-        txtDelete = new JTextField(5);
-        rowEliminar.add(txtDelete);
-        btnDelete = new JButton("Eliminar");
-        rowEliminar.add(btnDelete);
-        panelControls.add(rowEliminar);
-
-        // Fila de Buscar
-        JPanel rowBuscar = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
-        rowBuscar.add(new JLabel("Buscar clave:"));
-        txtBuscar = new JTextField(10);
-        rowBuscar.add(txtBuscar);
-        btnBuscar = new JButton("Buscar");
-        rowBuscar.add(btnBuscar);
-        panelControls.add(rowBuscar);
-
-        // Fila de Reiniciar
-        JPanel rowReset = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
-        btnReset = new JButton("Reiniciar");
-        rowReset.add(btnReset);
-        panelControls.add(rowReset);
-
-        mainPanel.add(panelControls);
-
-        // Panel de la tabla
-        tableModel = new DefaultTableModel(new Object[]{"Índice", "Valor", "Colisiones"}, 0);
+        // Tabla
+        tableModel = new DefaultTableModel(new Object[]{"Índice","Valor"},0);
         table = new JTable(tableModel);
-        JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setAlignmentX(Component.CENTER_ALIGNMENT);
-        mainPanel.add(scrollPane);
+        highlighter = new RowHighlighter(table);
+        JScrollPane scrollTable = new JScrollPane(table);
 
-        add(mainPanel);
+        // Terminal lateral
+        terminal = new JTextArea(10, 20);
+        terminal.setEditable(false);
+        JScrollPane scrollTerm = new JScrollPane(terminal);
+        scrollTerm.setBorder(BorderFactory.createTitledBorder("Terminal"));
+
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                scrollTable, scrollTerm);
+        split.setResizeWeight(0.7);
+
+        // Panel acciones
+        JPanel pBot = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
+        txtClave = new JTextField(10);
+        pBot.add(new JLabel("Clave:"));
+        pBot.add(txtClave);
+        btnInsert = new JButton("Insertar");
+        btnEliminar = new JButton("Eliminar");
+        btnBuscar = new JButton("Buscar");
+        btnGuardar = new JButton("Guardar");
+        btnImportar = new JButton("Importar");
+        pBot.add(btnInsert);
+        pBot.add(btnEliminar);
+        pBot.add(btnBuscar);
+        pBot.add(btnGuardar);
+        pBot.add(btnImportar);
+
+        setLayout(new BorderLayout(5,5));
+        add(pTop, BorderLayout.NORTH);
+        add(split, BorderLayout.CENTER);
+        add(pBot, BorderLayout.SOUTH);
     }
 
-    public String getTxtInsert() { return txtInsert.getText().trim(); }
-    public String getTxtUpdateIndex() { return txtUpdateIndex.getText().trim(); }
-    public String getTxtUpdateValue() { return txtUpdateValue.getText().trim(); }
-    public String getTxtDelete() { return txtDelete.getText().trim(); }
-    public String getTxtBuscar() { return txtBuscar.getText().trim(); }
-    public void setTxtInsert(String text) { txtInsert.setText(text); }
-    public void setTxtUpdateIndex(String text) { txtUpdateIndex.setText(text); }
-    public void setTxtUpdateValue(String text) { txtUpdateValue.setText(text); }
-    public void setTxtDelete(String text) { txtDelete.setText(text); }
-    public void setTxtBuscar(String text) { txtBuscar.setText(text); }
-    public JButton getBtnInsert() { return btnInsert; }
-    public JButton getBtnUpdate() { return btnUpdate; }
-    public JButton getBtnDelete() { return btnDelete; }
-    public JButton getBtnBuscar() { return btnBuscar; }
-    public JButton getBtnReset() { return btnReset; }
-    public DefaultTableModel getTableModel() { return tableModel; }
-    public JTable getTable() { return table; }
+    public String getTxtTamano()    { return txtTamano.getText().trim(); }
+    public String getTxtClave()     { return txtClave.getText().trim(); }
+    public JButton getBtnCrear()     { return btnCrear; }
+    public JButton getBtnInsert()    { return btnInsert; }
+    public JButton getBtnEliminar()  { return btnEliminar; }
+    public JButton getBtnBuscar()    { return btnBuscar; }
+    public JButton getBtnGuardar()   { return btnGuardar; }
+    public JButton getBtnImportar()  { return btnImportar; }
+    public DefaultTableModel getTableModel()    { return tableModel; }
+    public RowHighlighter getHighlighter()      { return highlighter; }
+    public JTextArea getTerminal()              { return terminal; }
 }

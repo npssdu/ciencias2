@@ -2,63 +2,49 @@ package modelo;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class BusquedaBinariaModel {
-    private ArrayList<Integer> lista;
-    private int tamano;
+    private final List<Integer> datos;
+    private final int tamano;
 
     public BusquedaBinariaModel(int tamano) {
+        if (tamano <= 0) throw new IllegalArgumentException("Tamaño debe ser >0");
         this.tamano = tamano;
-        lista = new ArrayList<>();
+        this.datos = new ArrayList<>(tamano);
     }
 
     public boolean insertar(int clave) {
-        if (lista.size() < tamano) {
-            lista.add(clave);
-            Collections.sort(lista);
-            return true;
+        if (datos.contains(clave) || datos.size() >= tamano) {
+            return false;
         }
-        return false;
+        datos.add(clave);
+        Collections.sort(datos);
+        return true;
     }
 
-    public ArrayList<Integer> getLista() {
-        return lista;
+    public boolean eliminar(int clave) {
+        return datos.remove((Integer) clave);
     }
 
-    public boolean actualizar(int index, int nuevoValor) {
-        if (index >= 0 && index < lista.size()) {
-            lista.set(index, nuevoValor);
-            Collections.sort(lista);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean eliminar(int index) {
-        if (index >= 0 && index < lista.size()) {
-            lista.remove(index);
-            return true;
-        }
-        return false;
-    }
-
+    /**
+     * Retorna el índice (0-based) si existe, o -1 si no.
+     * Usa Collections.binarySearch internamente.
+     */
     public int buscar(int clave) {
-        // Se implementa la búsqueda binaria
-        int low = 0, high = lista.size() - 1;
-        while (low <= high) {
-            int mid = (low + high) / 2;
-            int midVal = lista.get(mid);
-            if (midVal < clave)
-                low = mid + 1;
-            else if (midVal > clave)
-                high = mid - 1;
-            else
-                return mid;
-        }
-        return -1;
+        int idx = Collections.binarySearch(datos, clave);
+        return idx >= 0 ? idx : -1;
+    }
+
+    public List<Integer> getDatos() {
+        return datos;
+    }
+
+    public int getTamano() {
+        return tamano;
     }
 
     public void reiniciar() {
-        lista.clear();
+        datos.clear();
     }
 }

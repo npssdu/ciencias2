@@ -58,12 +58,9 @@ public class MainMenuController {
     }
 
     private void abrirBusquedaBinaria() {
-        int tamano = solicitarTamano();
-        if(tamano <= 0) return;
-        BusquedaBinariaModel modelo = new BusquedaBinariaModel(tamano);
-        new BusquedaBinariaController(modelo, new BusquedaBinariaView());
+        BusquedaBinariaView v = new BusquedaBinariaView();
+        new BusquedaBinariaController(null, v);
     }
-
     private void abrirHashMod() {
         int tamano = solicitarTamano();
         if(tamano <= 0) return;
