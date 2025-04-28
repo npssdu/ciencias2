@@ -7,10 +7,13 @@ public class MainMenuView extends JFrame {
 
     private JTabbedPane tabbedPane;
 
-    // Pestaña 1: Búsquedas Internas
-    private JPanel panelInternas;
+    // Sección 1: Métodos de Búsqueda
+    private JPanel panelBusqueda;
     private JButton btnBusquedaLineal;
     private JButton btnBusquedaBinaria;
+
+    // Sección 2: Funciones Hash
+    private JPanel panelHash;
     private JButton btnHashMod;
     private JButton btnHashCuadrado;
     private JButton btnHashPlegamiento;
@@ -40,38 +43,53 @@ public class MainMenuView extends JFrame {
 
         tabbedPane = new JTabbedPane();
 
-        // --- Pestaña 1: Búsquedas Internas ---
-        panelInternas = new JPanel(new GridBagLayout());
+        // --- Pestaña 1: Métodos de Búsqueda y Funciones Hash ---
+        JPanel panelBusquedaYHash = new JPanel(new GridLayout(1, 2, 20, 0));
+
+        // Panel de Métodos de Búsqueda
+        panelBusqueda = new JPanel(new GridBagLayout());
+        panelBusqueda.setBorder(BorderFactory.createTitledBorder("Métodos de Búsqueda"));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
 
         gbc.gridx = 0;
         gbc.gridy = 0;
         btnBusquedaLineal = new JButton("Búsqueda Lineal");
-        panelInternas.add(btnBusquedaLineal, gbc);
+        panelBusqueda.add(btnBusquedaLineal, gbc);
 
-        gbc.gridx = 1;
+        gbc.gridx = 0;
+        gbc.gridy = 1;
         btnBusquedaBinaria = new JButton("Búsqueda Binaria");
-        panelInternas.add(btnBusquedaBinaria, gbc);
+        panelBusqueda.add(btnBusquedaBinaria, gbc);
 
-        gbc.gridx = 2;
+        // Panel de Funciones Hash
+        panelHash = new JPanel(new GridBagLayout());
+        panelHash.setBorder(BorderFactory.createTitledBorder("Funciones Hash"));
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
         btnHashMod = new JButton("Función Hash Mod");
-        panelInternas.add(btnHashMod, gbc);
+        panelHash.add(btnHashMod, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
         btnHashCuadrado = new JButton("Función Hash Cuadrado");
-        panelInternas.add(btnHashCuadrado, gbc);
+        panelHash.add(btnHashCuadrado, gbc);
 
-        gbc.gridx = 1;
+        gbc.gridx = 0;
+        gbc.gridy = 2;
         btnHashPlegamiento = new JButton("Función Hash Plegamiento");
-        panelInternas.add(btnHashPlegamiento, gbc);
+        panelHash.add(btnHashPlegamiento, gbc);
 
-        gbc.gridx = 2;
+        gbc.gridx = 0;
+        gbc.gridy = 3;
         btnHashTruncamiento = new JButton("Función Hash Truncamiento");
-        panelInternas.add(btnHashTruncamiento, gbc);
+        panelHash.add(btnHashTruncamiento, gbc);
 
-        tabbedPane.addTab("Búsquedas Internas", panelInternas);
+        // Agregar ambos paneles a la pestaña
+        panelBusquedaYHash.add(panelBusqueda);
+        panelBusquedaYHash.add(panelHash);
+        tabbedPane.addTab("Búsquedas y Hash", panelBusquedaYHash);
 
         // --- Pestaña 2: Búsquedas por residuos ---
         panelResiduos = new JPanel(new GridBagLayout());
@@ -116,13 +134,15 @@ public class MainMenuView extends JFrame {
         add(tabbedPane, BorderLayout.CENTER);
     }
 
-    // Getters para los botones de Búsquedas Internas
+    // Getters para los botones de Métodos de Búsqueda
     public JButton getBtnBusquedaLineal() {
         return btnBusquedaLineal;
     }
     public JButton getBtnBusquedaBinaria() {
         return btnBusquedaBinaria;
     }
+
+    // Getters para los botones de Funciones Hash
     public JButton getBtnHashMod() {
         return btnHashMod;
     }
