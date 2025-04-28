@@ -2,121 +2,137 @@ package controlador;
 
 import modelo.BusquedaLinealModel;
 import vista.BusquedaLinealView;
-import vista.BoldRedRenderer;
 
-import javax.swing.JOptionPane;
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.io.*;
+import java.nio.file.*;
+import java.util.List;
+import java.awt.Color;
 
 public class BusquedaLinealController {
     private BusquedaLinealModel model;
-    private BusquedaLinealView view;
-    private int lastInsertedIndex = -1;
+    private final BusquedaLinealView view;
+    private final Path baseDir = Paths.get("archivos/BusquedaLineal");
 
-    public BusquedaLinealController(BusquedaLinealModel model, BusquedaLinealView view) {
-        this.model = model;
-        this.view = view;
-        initController();
+    public BusquedaLinealController(BusquedaLinealModel m, BusquedaLinealView v) {
+        this.model = m;
+        this.view = v;
+        init();
         view.setVisible(true);
     }
 
-    private void initController() {
+    private void init() {
+        view.getBtnCrear().addActionListener(e -> crearEstructura());
         view.getBtnInsert().addActionListener(e -> insertar());
-        view.getBtnUpdate().addActionListener(e -> actualizar());
-        view.getBtnDelete().addActionListener(e -> eliminar());
+        view.getBtnEliminar().addActionListener(e -> eliminar());
         view.getBtnBuscar().addActionListener(e -> buscar());
-        view.getBtnReset().addActionListener(e -> reiniciar());
-        actualizarTabla();
+        view.getBtnOrdenar().addActionListener(e -> ordenar());
+        view.getBtnGuardar().addActionListener(e -> guardar());
+        view.getBtnImportar().addActionListener(e -> importar());
+    }
+
+    private void log(String msg) {
+        view.getTerminal().append(msg + "\n");
+    }
+
+    private void crearEstructura() {
+        String t = view.getTxtTamano();
+        try {
+            int tam = Integer.parseInt(t);
+            model = new BusquedaLinealModel(tam);
+            log("Estructura creada con tamaño=" + tam);
+            actualizarTabla();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(view, "Tamaño inválido");
+        }
     }
 
     private void insertar() {
-        String clave = view.getTxtInsert();
-        if (clave.isEmpty())
-            return;
-        // Verificar si la clave ya existe
-        if (model.buscar(clave) != -1) {
-            JOptionPane.showMessageDialog(view, "La clave '" + clave + "' ya existe. No se puede insertar duplicada.");
-            view.setTxtInsert("");
-            return;
-        }
-        boolean exito = model.insertar(clave);
-        if (exito) {
-            lastInsertedIndex = model.getUltimoIndiceInsertado();
-            // Operación paso a paso
-            StringBuilder pasoAPaso = new StringBuilder();
-            pasoAPaso.append("Operación paso a paso:\n");
-            pasoAPaso.append("1. Se recibe la clave: ").append(clave).append("\n");
-            pasoAPaso.append("2. Se inserta secuencialmente en el índice: ").append(lastInsertedIndex + 1).append("\n");
-            pasoAPaso.append("   (Los índices se muestran desde 1 en adelante)");
-            JOptionPane.showMessageDialog(view, pasoAPaso.toString());
+        String c = view.getTxtClave();
+        if (model == null) { JOptionPane.showMessageDialog(view,"Defina tamaño"); return; }
+        if (model.insertar(c)) {
+            actualizarTabla();
+            int row = model.getDatos().size()-1;
+            view.getHighlighter().highlight(row, Color.CYAN);
+            log("Insertado '" + c + "'");
         } else {
-            JOptionPane.showMessageDialog(view, "Estructura llena.");
+            JOptionPane.showMessageDialog(view,"No se puede insertar");
         }
-        view.setTxtInsert("");
-        actualizarTabla();
-    }
-
-    private void actualizar() {
-        try {
-            int index = Integer.parseInt(view.getTxtUpdateIndex());
-            String valor = view.getTxtUpdateValue();
-            // Convertir de 1-based a 0-based
-            index = index - 1;
-            if (model.actualizar(index, valor)) {
-                JOptionPane.showMessageDialog(view, "Índice " + (index + 1) + " actualizado a '" + valor + "'");
-            } else {
-                JOptionPane.showMessageDialog(view, "Índice inválido.");
-            }
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(view, "Índice inválido.");
-        }
-        view.setTxtUpdateIndex("");
-        view.setTxtUpdateValue("");
-        actualizarTabla();
     }
 
     private void eliminar() {
-        try {
-            int index = Integer.parseInt(view.getTxtDelete());
-            // Convertir de 1-based a 0-based
-            index = index - 1;
-            if (model.eliminar(index)) {
-                JOptionPane.showMessageDialog(view, "Índice " + (index + 1) + " eliminado.");
-            } else {
-                JOptionPane.showMessageDialog(view, "Índice inválido.");
-            }
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(view, "Índice inválido.");
+        String c = view.getTxtClave();
+        if (model == null) { JOptionPane.showMessageDialog(view,"Defina tamaño"); return; }
+        if (model.eliminar(c)) {
+            actualizarTabla();
+            view.getHighlighter().highlightAll(Color.PINK);
+            log("Eliminado '" + c + "'");
+        } else {
+            JOptionPane.showMessageDialog(view,"Clave no existe");
         }
-        view.setTxtDelete("");
-        actualizarTabla();
     }
 
     private void buscar() {
-        String clave = view.getTxtBuscar();
-        int indice = model.buscar(clave);
-        if (indice != -1) {
-            JOptionPane.showMessageDialog(view, "Clave '" + clave + "' encontrada en el índice " + (indice + 1));
+        String c = view.getTxtClave();
+        if (model == null) { JOptionPane.showMessageDialog(view,"Defina tamaño"); return; }
+        int idx = model.buscar(c);
+        if (idx>=0) {
+            view.getHighlighter().highlight(idx, Color.GREEN.brighter());
+            log("Encontrado '" + c + "' en índice " + (idx+1));
         } else {
-            JOptionPane.showMessageDialog(view, "Clave no encontrada.");
+            JOptionPane.showMessageDialog(view,"No encontrado");
         }
-        view.setTxtBuscar("");
     }
 
-    private void reiniciar() {
-        model.reiniciar();
-        lastInsertedIndex = -1;
+    private void ordenar() {
+        if (model == null) return;
+        model.ordenar();
         actualizarTabla();
+        log("Lista ordenada");
+    }
+
+    private void guardar() {
+        try {
+            Files.createDirectories(baseDir);
+            String name = JOptionPane.showInputDialog("Nombre archivo:");
+            if (name==null || name.isBlank()) return;
+            Path file = baseDir.resolve(name + ".csv");
+            try (PrintWriter pw = new PrintWriter(file.toFile())) {
+                pw.println("Tamaño," + model.getTamano());
+                for (String c: model.getDatos())
+                    pw.println(c);
+            }
+            log("Guardado en " + file);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(view,"Error guardando");
+        }
+    }
+
+    private void importar() {
+        try {
+            Files.createDirectories(baseDir);
+            JFileChooser fc = new JFileChooser(baseDir.toFile());
+            if (fc.showOpenDialog(view)!=JFileChooser.APPROVE_OPTION) return;
+            Path file = fc.getSelectedFile().toPath();
+            List<String> lines = Files.readAllLines(file);
+            int tam = Integer.parseInt(lines.get(0).split(",")[1]);
+            model = new BusquedaLinealModel(tam);
+            for (int i=1;i<lines.size();i++){
+                model.insertar(lines.get(i).trim());
+            }
+            actualizarTabla();
+            log("Importado desde " + file);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(view,"Error importando");
+        }
     }
 
     private void actualizarTabla() {
-        DefaultTableModel dtm = view.getTableModel();
-        dtm.setRowCount(0);
-        String[] estructura = model.getEstructura();
-        for (int i = 0; i < estructura.length; i++) {
-            String valor = (estructura[i] == null) ? "-" : estructura[i];
-            dtm.addRow(new Object[]{(i + 1), valor, "-"});
-        }
-        BoldRedRenderer renderer = new BoldRedRenderer(lastInsertedIndex);
-        view.getTable().getColumnModel().getColumn(1).setCellRenderer(renderer);
+        DefaultTableModel tm = view.getTableModel();
+        tm.setRowCount(0);
+        List<String> d = model.getDatos();
+        for (int i=0;i<d.size();i++)
+            tm.addRow(new Object[]{i+1, d.get(i)});
     }
 }

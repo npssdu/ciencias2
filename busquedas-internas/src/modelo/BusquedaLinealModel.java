@@ -1,60 +1,47 @@
 package modelo;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class BusquedaLinealModel {
-    private String[] estructura;
-    private int nextIndex;
+    private final List<String> datos;
+    private final int tamano;
 
     public BusquedaLinealModel(int tamano) {
-        estructura = new String[tamano];
-        nextIndex = 0;
+        if (tamano <= 0) throw new IllegalArgumentException("Tamaño debe ser >0");
+        this.tamano = tamano;
+        this.datos = new ArrayList<>(tamano);
     }
 
     public boolean insertar(String clave) {
-        if (nextIndex < estructura.length) {
-            estructura[nextIndex] = clave;
-            nextIndex++;
-            return true;
-        }
-        return false;
+        if (clave == null || clave.isEmpty() || datos.contains(clave) || datos.size() >= tamano)
+            return false;
+        datos.add(clave);
+        return true;
     }
 
-    public int getUltimoIndiceInsertado() {
-        return nextIndex - 1;
-    }
-
-    public String[] getEstructura() {
-        return estructura;
-    }
-
-    public boolean actualizar(int index, String valor) {
-        if (index >= 0 && index < estructura.length) {
-            estructura[index] = valor;
-            return true;
-        }
-        return false;
-    }
-
-    public boolean eliminar(int index) {
-        if (index >= 0 && index < estructura.length) {
-            estructura[index] = null;
-            return true;
-        }
-        return false;
+    public boolean eliminar(String clave) {
+        return datos.remove(clave);
     }
 
     public int buscar(String clave) {
-        for (int i = 0; i < estructura.length; i++) {
-            if (clave.equals(estructura[i])) {
-                return i;
-            }
-        }
-        return -1;
+        return datos.indexOf(clave);
+    }
+
+    public void ordenar() {
+        Collections.sort(datos);
+    }
+
+    public List<String> getDatos() {
+        return datos;
+    }
+
+    public int getTamano() {
+        return tamano;
     }
 
     public void reiniciar() {
-        for (int i = 0; i < estructura.length; i++) {
-            estructura[i] = null;
-        }
-        nextIndex = 0;
+        datos.clear();
     }
 }

@@ -15,7 +15,9 @@ public class MainMenuController {
 
     private void initController() {
         // Búsquedas Internas
+
         view.getBtnBusquedaLineal().addActionListener(e -> abrirBusquedaLineal());
+
         view.getBtnBusquedaBinaria().addActionListener(e -> abrirBusquedaBinaria());
         view.getBtnHashMod().addActionListener(e -> abrirHashMod());
         view.getBtnHashCuadrado().addActionListener(e -> abrirHashCuadrado());
@@ -49,11 +51,10 @@ public class MainMenuController {
     }
 
     // --- Métodos para Búsquedas Internas ---
+    
     private void abrirBusquedaLineal() {
-        int tamano = solicitarTamano();
-        if(tamano <= 0) return;
-        BusquedaLinealModel modelo = new BusquedaLinealModel(tamano);
-        new BusquedaLinealController(modelo, new BusquedaLinealView());
+        BusquedaLinealView v = new BusquedaLinealView();
+        new BusquedaLinealController(null, v);
     }
 
     private void abrirBusquedaBinaria() {
