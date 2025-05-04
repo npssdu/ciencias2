@@ -65,12 +65,10 @@ public class MainMenuController {
         HashModView v = new HashModView();
         new HashModController(null, v);
     }
-    
+
     private void abrirHashCuadrado() {
-        int tamano = solicitarTamano();
-        if(tamano <= 0) return;
-        HashCuadradoModel modelo = new HashCuadradoModel(tamano);
-        new HashController(modelo, new HashCuadradoView());
+        HashCuadradoView v = new HashCuadradoView();
+        new HashCuadradoController(null, v);
     }
 
     private void abrirHashPlegamiento() {
