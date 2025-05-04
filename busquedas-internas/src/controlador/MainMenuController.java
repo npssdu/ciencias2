@@ -62,12 +62,10 @@ public class MainMenuController {
         new BusquedaBinariaController(null, v);
     }
     private void abrirHashMod() {
-        int tamano = solicitarTamano();
-        if(tamano <= 0) return;
-        HashModModel modelo = new HashModModel(tamano);
-        new HashController(modelo, new HashModView());
+        HashModView v = new HashModView();
+        new HashModController(null, v);
     }
-
+    
     private void abrirHashCuadrado() {
         int tamano = solicitarTamano();
         if(tamano <= 0) return;
