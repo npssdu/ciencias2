@@ -1,44 +1,68 @@
 package vista;
 
+import modelo.ArbolesBResiduosMultiplesModel;
 import javax.swing.*;
 import java.awt.*;
 
 public class ArbolesBResiduosMultiplesView extends JFrame {
-    private JTextField txtPalabra;
-    private JButton btnCrearArbol;
-    private JTextArea areaArbol;
+    private final JTextField txtPalabra;
+    private final JTextField txtM;
+    private final JButton btnCalcular;
+    private final JButton btnCrear;
+    private final TreePanelBResiduosMultiples treePanel;
 
-    public ArbolesBResiduosMultiplesView() {
-        setTitle("Arboles B por Residuos Múltiples");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(600, 500);
+    public ArbolesBResiduosMultiplesView(ArbolesBResiduosMultiplesModel model) {
+        setTitle("Árboles B Residuos Múltiples");
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setSize(900, 650);
         setLocationRelativeTo(null);
 
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        JPanel panelInput = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        panelInput.add(new JLabel("Ingrese palabra:"));
-        txtPalabra = new JTextField(15);
-        panelInput.add(txtPalabra);
-        btnCrearArbol = new JButton("Crear Árbol");
-        panelInput.add(btnCrearArbol);
-        mainPanel.add(panelInput, BorderLayout.NORTH);
+        // Panel superior unificado
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        top.add(new JLabel("Palabra:"));
+        txtPalabra = new JTextField(12);
+        top.add(txtPalabra);
 
-        areaArbol = new JTextArea();
-        areaArbol.setEditable(false);
-        mainPanel.add(new JScrollPane(areaArbol), BorderLayout.CENTER);
+        top.add(new JLabel("M (bits/rama):"));
+        txtM = new JTextField(3);
+        top.add(txtM);
 
-        add(mainPanel);
+        btnCalcular = new JButton("Calcular enlaces");
+        top.add(btnCalcular);
+
+        btnCrear = new JButton("Crear Árbol");
+        btnCrear.setEnabled(false);
+        top.add(btnCrear);
+
+        // Panel de dibujo
+        treePanel = new TreePanelBResiduosMultiples(model);
+
+        setLayout(new BorderLayout(5,5));
+        add(top, BorderLayout.NORTH);
+        add(new JScrollPane(treePanel), BorderLayout.CENTER);
     }
 
     public String getPalabra() {
         return txtPalabra.getText().trim();
     }
 
-    public JButton getBtnCrearArbol() {
-        return btnCrearArbol;
+    public String getM() {
+        return txtM.getText().trim();
     }
 
-    public void setAreaArbol(String texto) {
-        areaArbol.setText(texto);
+    public JButton getBtnCalcular() {
+        return btnCalcular;
+    }
+
+    public JButton getBtnCrear() {
+        return btnCrear;
+    }
+
+    public void repaintTree() {
+        treePanel.repaint();
+    }
+
+    public void setWordLength(int n) {
+        treePanel.setWordLength(n);
     }
 }

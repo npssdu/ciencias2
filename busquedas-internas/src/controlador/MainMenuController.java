@@ -4,7 +4,9 @@ import javax.swing.JOptionPane;
 
 import modelo.*;
 import vista.*;
-
+import modelo.ArbolesBResiduosMultiplesModel;
+import vista.ArbolesBResiduosMultiplesView;
+import controlador.ArbolesBResiduosMultiplesController;
 public class MainMenuController {
     private MainMenuView view;
 
@@ -104,7 +106,9 @@ public class MainMenuController {
 
 
     private void abrirArbolesBResiduosMultiples() {
-        JOptionPane.showMessageDialog(view, "Abriendo ventana para Árboles B por Residuos Múltiples.\n(Pendiente la implementación del algoritmo)");
+        ArbolesBResiduosMultiplesModel modelo = new ArbolesBResiduosMultiplesModel();
+        ArbolesBResiduosMultiplesView vista = new ArbolesBResiduosMultiplesView(modelo);
+        new ArbolesBResiduosMultiplesController(modelo, vista);
     }
 
     // --- Método para Árboles de Huffman ---
