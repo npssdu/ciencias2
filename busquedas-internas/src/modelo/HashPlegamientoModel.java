@@ -1,32 +1,111 @@
 package modelo;
 
-public class HashPlegamientoModel extends HashModel {
+import java.util.Arrays;
 
-    public HashPlegamientoModel(int tamanoTabla) {
-        super(tamanoTabla);
+public class HashPlegamientoModel {
+    private final String[] tabla;
+    private final int tamano;
+
+    public HashPlegamientoModel(int tamano) {
+        if (tamano <= 0) throw new IllegalArgumentException("Tamaño > 0");
+        this.tamano = tamano;
+        this.tabla = new String[tamano];
+        Arrays.fill(this.tabla, null);
     }
 
-    @Override
-    protected int calcularHash(String clave) {
-        // Se define el tamaño del grupo como la longitud del máximo índice (tamanoTabla - 1)
-        int groupSize = String.valueOf(tamanoTabla - 1).length();
-        int suma = 0;
+    public int getTamano() {
+        return tamano;
+    }
 
-        // Se recorren la clave en grupos de "groupSize" dígitos
+    /**
+     * Calcula el hash por plegamiento.
+     * Ahora es público para uso externo (Controlador).
+     */
+    public int hashBase(String clave) {
+        int groupSize = String.valueOf(tamano - 1).length();
+        int suma = 0;
         for (int i = 0; i < clave.length(); i += groupSize) {
             int fin = Math.min(i + groupSize, clave.length());
             String grupo = clave.substring(i, fin);
-            try {
-                int num = Integer.parseInt(grupo);
-                suma += num;
-            } catch (NumberFormatException e) {
-                // En caso de error, se retorna -1
-                return -1;
+            suma += Integer.parseInt(grupo);
+        }
+        return (suma % tamano) + 1;
+    }
+
+    /**
+     * Inserta la clave en la tabla:
+     *  -1 si duplicada
+     *  índice si éxito (resuelto lineal +1 wrap)
+     *  -2 si tabla llena.
+     * Apendea pasos en el StringBuilder.
+     */
+    public int insertar(String clave, StringBuilder pasos) {
+        // Duplicada
+        for (String s : tabla) if (clave.equals(s)) {
+            pasos.append("Clave '").append(clave).append("' duplicada.\n");
+            return -1;
+        }
+        int h0 = hashBase(clave);
+        pasos.append("HashBase('").append(clave).append("') = ").append(h0).append("\n");
+        // Colisión lineal
+        for (int i = 0; i < tamano; i++) {
+            int idx = (h0 + i) % tamano;
+            pasos.append("  intento i=").append(i).append(" → idx=").append(idx);
+            if (tabla[idx] == null) {
+                tabla[idx] = clave;
+                pasos.append(" → libre, insertado.\n");
+                return idx;
+            } else {
+                pasos.append(" → colisión con '").append(tabla[idx]).append("'.\n");
             }
         }
-        // Se le suma 1 al resultado de la suma de grupos
-        // suma += 1;
-        // Se aplica el módulo para asegurar que el hash esté en el rango de la tabla
-        return suma % tamanoTabla;
+        pasos.append("Tabla llena, no se puede insertar.\n");
+        return -2;
+    }
+
+    /** Elimina por clave y rehash lineal para compactar */
+    public boolean eliminar(String clave) {
+        boolean found = false;
+        for (int i = 0; i < tamano; i++) {
+            if (clave.equals(tabla[i])) {
+                tabla[i] = null;
+                found = true;
+                break;
+            }
+        }
+        if (!found) return false;
+        // Rehash de todos los elementos
+        String[] copia = Arrays.copyOf(tabla, tamano);
+        Arrays.fill(tabla, null);
+        for (String s : copia) {
+            if (s != null) {
+                // Reinsertar sin pasos
+                int h0 = hashBase(s);
+                for (int j = 0; j < tamano; j++) {
+                    int idx = (h0 + j) % tamano;
+                    if (tabla[idx] == null) {
+                        tabla[idx] = s;
+                        break;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    /** Busca índice de clave o -1 */
+    public int buscar(String clave) {
+        for (int i = 0; i < tamano; i++) {
+            if (clave.equals(tabla[i])) return i;
+        }
+        return -1;
+    }
+
+    public String[] getTabla() {
+        return tabla;
+    }
+
+    public void reiniciar() {
+        Arrays.fill(tabla, null);
     }
 }

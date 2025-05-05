@@ -4,8 +4,6 @@ import javax.swing.JOptionPane;
 
 import modelo.*;
 import vista.*;
-import modelo.ArbolesBResiduosMultiplesModel;
-import vista.ArbolesBResiduosMultiplesView;
 import controlador.ArbolesBResiduosMultiplesController;
 public class MainMenuController {
     private MainMenuView view;
@@ -74,10 +72,8 @@ public class MainMenuController {
     }
 
     private void abrirHashPlegamiento() {
-        int tamano = solicitarTamano();
-        if(tamano <= 0) return;
-        HashPlegamientoModel modelo = new HashPlegamientoModel(tamano);
-        new HashController(modelo, new HashPlegamientoView());
+        HashPlegamientoView v = new HashPlegamientoView();
+        new HashPlegamientoController(null, v);
     }
 
     private void abrirHashTruncamiento() {
