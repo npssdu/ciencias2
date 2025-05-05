@@ -21,6 +21,9 @@ public class TreePanelBResiduosParticular extends JPanel {
     private ArbolesBResiduosParticularModel.Node dragged = null;
     private Point dragOff = new Point();
 
+    // Highlighted node
+    private ArbolesBResiduosParticularModel.Node highlightedNode = null;
+
     public TreePanelBResiduosParticular(ArbolesBResiduosParticularModel model) {
         this.model = model;
         setBackground(Color.WHITE);
@@ -73,6 +76,11 @@ public class TreePanelBResiduosParticular extends JPanel {
         this.wordLength = n;
     }
 
+    public void setHighlightedNode(ArbolesBResiduosParticularModel.Node node) {
+        this.highlightedNode = node;
+        repaint();
+    }
+
     @Override
     protected void paintComponent(Graphics _g) {
         super.paintComponent(_g);
@@ -104,7 +112,7 @@ public class TreePanelBResiduosParticular extends JPanel {
                           int xOffset, int yOffset) {
         // posición
         Point pos = positions.get(node);
-        if (pos==null) {
+        if (pos == null) {
             pos = new Point(x, y);
             positions.put(node, pos);
         } else {
@@ -112,36 +120,43 @@ public class TreePanelBResiduosParticular extends JPanel {
             y = pos.y;
         }
 
-        // nodo
-        g.setColor(Color.BLACK);
-        g.fillOval(x-15, y-15, 30, 30);
+        // Color del nodo
+        if (node == highlightedNode) {
+            g.setColor(new Color(128, 0, 128)); // Purple for highlighted node
+        } else if (node.data == null) {
+            g.setColor(new Color(173, 216, 230)); // Light blue for empty nodes
+        } else {
+            g.setColor(Color.BLACK);
+        }
+        g.fillOval(x - 15, y - 15, 30, 30);
+
         g.setFont(new Font("Arial", Font.BOLD, 16));
         g.setColor(Color.WHITE);
-        if (node.data!=null) {
+        if (node.data != null) {
             String s = node.data.toString();
             FontMetrics fm = g.getFontMetrics();
-            g.drawString(s, x - fm.stringWidth(s)/2, y + fm.getAscent()/4);
+            g.drawString(s, x - fm.stringWidth(s) / 2, y + fm.getAscent() / 4);
         }
 
         // hijo izquierdo
-        if (node.left!=null) {
-            Point c = positions.getOrDefault(node.left, new Point(x-xOffset, y+yOffset));
+        if (node.left != null) {
+            Point c = positions.getOrDefault(node.left, new Point(x - xOffset, y + yOffset));
             positions.putIfAbsent(node.left, c);
             g.setColor(Color.BLUE);
             g.drawLine(x, y, c.x, c.y);
             g.setFont(new Font("Arial", Font.BOLD, 12));
-            g.drawString("0", (x+c.x)/2 - 5, (y+c.y)/2 - 5);
-            drawNode(g, node.left, c.x, c.y, xOffset/2, yOffset);
+            g.drawString("0", (x + c.x) / 2 - 5, (y + c.y) / 2 - 5);
+            drawNode(g, node.left, c.x, c.y, xOffset / 2, yOffset);
         }
         // hijo derecho
-        if (node.right!=null) {
-            Point c = positions.getOrDefault(node.right, new Point(x+xOffset, y+yOffset));
+        if (node.right != null) {
+            Point c = positions.getOrDefault(node.right, new Point(x + xOffset, y + yOffset));
             positions.putIfAbsent(node.right, c);
             g.setColor(Color.RED);
             g.drawLine(x, y, c.x, c.y);
             g.setFont(new Font("Arial", Font.BOLD, 12));
-            g.drawString("1", (x+c.x)/2 - 5, (y+c.y)/2 - 5);
-            drawNode(g, node.right, c.x, c.y, xOffset/2, yOffset);
+            g.drawString("1", (x + c.x) / 2 - 5, (y + c.y) / 2 - 5);
+            drawNode(g, node.right, c.x, c.y, xOffset / 2, yOffset);
         }
     }
 }
