@@ -36,7 +36,7 @@ public class MainMenuView extends JFrame {
     private JButton btnArboles2DKD;
 
     public MainMenuView() {
-        setTitle("Menú de Algoritmos y Búsquedas Internas");
+        setTitle("Aplicación Ciencias de la Computación II");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
         setLocationRelativeTo(null); // Centrar la ventana en la pantalla
@@ -48,7 +48,7 @@ public class MainMenuView extends JFrame {
 
         // Panel de Métodos de Búsqueda
         panelBusqueda = new JPanel(new GridBagLayout());
-        panelBusqueda.setBorder(BorderFactory.createTitledBorder("Métodos de Búsqueda"));
+        panelBusqueda.setBorder(BorderFactory.createTitledBorder("Búsquedas"));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
 
@@ -89,24 +89,24 @@ public class MainMenuView extends JFrame {
         // Agregar ambos paneles a la pestaña
         panelBusquedaYHash.add(panelBusqueda);
         panelBusquedaYHash.add(panelHash);
-        tabbedPane.addTab("Búsquedas y Hash", panelBusquedaYHash);
+        tabbedPane.addTab("Búsquedas Internas", panelBusquedaYHash);
 
         // --- Pestaña 2: Búsquedas por residuos ---
         panelResiduos = new JPanel(new GridBagLayout());
         gbc.gridx = 0;
         gbc.gridy = 0;
-        btnArbolesBDigitales = new JButton("Arboles B Digitales");
+        btnArbolesBDigitales = new JButton("Arboles Digitales");
         panelResiduos.add(btnArbolesBDigitales, gbc);
 
         gbc.gridx = 1;
-        btnArbolesBResiduosParticular = new JButton("Arboles B por Residuos Particular");
+        btnArbolesBResiduosParticular = new JButton("Arboles por Residuos Particular");
         panelResiduos.add(btnArbolesBResiduosParticular, gbc);
 
         gbc.gridx = 2;
-        btnArbolesBResiduosMultiples = new JButton("Arboles B por Residuos Múltiples");
+        btnArbolesBResiduosMultiples = new JButton("Arboles por Residuos Múltiples");
         panelResiduos.add(btnArbolesBResiduosMultiples, gbc);
 
-        tabbedPane.addTab("Búsquedas por residuos", panelResiduos);
+        tabbedPane.addTab("Árboles Búsquedas por residuos", panelResiduos);
 
         // --- Pestaña 3: Árboles de Huffman ---
         panelHuffman = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
@@ -180,6 +180,6 @@ public class MainMenuView extends JFrame {
         return btnMetodosRejilla;
     }
     public JButton getBtnArboles2DKD() {
-        return btnArboles2DKD;
+      return btnArboles2DKD;
     }
 }
