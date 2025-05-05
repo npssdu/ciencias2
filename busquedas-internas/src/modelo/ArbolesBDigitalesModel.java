@@ -1,105 +1,112 @@
 package modelo;
 
+import java.util.*;
+
+/**
+ * Modelo de Árboles B Digitales con:
+ *  - insertarConPasos(char)
+ *  - buscar(char)
+ *  - eliminar(char)
+ *  - preorden()
+ */
 public class ArbolesBDigitalesModel {
 
-    // Clase interna para representar un nodo del árbol.
     public class Node {
         public Character data;
-        public Node left;
-        public Node right;
-
+        public Node left, right;
         public Node(Character data) {
             this.data = data;
-            this.left = null;
-            this.right = null;
+            this.left = this.right = null;
         }
     }
 
     private Node root;
-    private int customBits = 5; // Valor por defecto (para palabra de 6 letras: 6-1=5 bits)
+    private int customBits = 1;
 
     public ArbolesBDigitalesModel() {
-        root = null;
+        this.root = null;
     }
 
-    //Metodo para establecer la cantidad de bits custom, calculado como (wordLength - 1)
-    //public void setCustomBits(int bits) {
-    //    this.customBits = bits > 0 ? bits : 1;
-    //}
+    public void setCustomBits(int wordLength) {
+        this.customBits = Math.max(1, wordLength - 1);
+    }
 
-    // Retorna la raíz del árbol.
+    public String insertarConPasos(char letra) {
+        StringBuilder log = new StringBuilder();
+        String bin = Integer.toBinaryString((int)letra);
+        if (bin.length() > customBits) {
+            bin = bin.substring(bin.length() - customBits);
+        } else {
+            bin = String.format("%" + customBits + "s", bin).replace(' ', '0');
+        }
+        log.append("Letra: ").append(letra)
+           .append(" (ASCII ").append((int)letra).append(") → binario: ").append(bin).append("\n");
+
+        if (root == null) {
+            root = new Node(letra);
+            log.append("Árbol vacío, raíz = '").append(letra).append("'\n");
+            return log.toString();
+        }
+        Node cur = root;
+        for (int i = 0; i < bin.length(); i++) {
+            char b = bin.charAt(i);
+            log.append("Bit ").append(i+1).append("='").append(b).append("': ");
+            if (b == '0') {
+                if (cur.left == null) {
+                    cur.left = new Node(letra);
+                    log.append("insertado a la izquierda\n");
+                    return log.toString();
+                } else {
+                    log.append("baja por izquierda (").append(cur.left.data).append(")\n");
+                    cur = cur.left;
+                }
+            } else {
+                if (cur.right == null) {
+                    cur.right = new Node(letra);
+                    log.append("insertado a la derecha\n");
+                    return log.toString();
+                } else {
+                    log.append("baja por derecha (").append(cur.right.data).append(")\n");
+                    cur = cur.right;
+                }
+            }
+        }
+        log.append("Bits agotados, reemplaza nodo con '").append(letra).append("'\n");
+        cur.data = letra;
+        return log.toString();
+    }
+
     public Node getRoot() {
         return root;
     }
 
-    /**
-     * Convierte la letra a una representación binaria de 'customBits' bits.
-     * Se obtiene el código ASCII en binario y se formatea a customBits:
-     * si es mayor que customBits, se toman los bits menos significativos;
-     * si es menor, se añade ceros a la izquierda.
-     */
-    public String getCustomBinary(char c) {
-        int ascii = (int)c;
-        String bin = Integer.toBinaryString(ascii);
-        if (bin.length() > customBits) {
-            return bin.substring(bin.length() - customBits);
-        } else {
-            return String.format("%" + customBits + "s", bin).replace(' ', '0');
-        }
+    public Node buscar(char letra) {
+        return buscarRec(root, letra);
+    }
+    private Node buscarRec(Node n, char letra) {
+        if (n == null) return null;
+        if (n.data != null && n.data == letra) return n;
+        Node l = buscarRec(n.left, letra);
+        if (l != null) return l;
+        return buscarRec(n.right, letra);
     }
 
-    /**
-     * Inserta la letra siguiendo este algoritmo:
-     * - La primera letra se asigna a la raíz.
-     * - Para cada letra se obtiene su representación binaria (custom de customBits).
-     * - Se recorre la ruta: para cada bit, '0' intenta insertar a la izquierda, '1' a la derecha.
-     *   Si la posición ya está ocupada, se baja y se usa el siguiente bit.
-     * Devuelve un String con el paso a paso del proceso.
-     */
-    public String insertarConPasos(char letra) {
-        StringBuilder pasos = new StringBuilder();
-        String binary = getCustomBinary(letra);
-        pasos.append("Letra: ").append(letra).append("\n")
-                .append("Código ASCII (decimal): ").append((int)letra).append("\n")
-                .append("Código binario (").append(customBits).append(" bits): ").append(binary).append("\n");
+    public boolean eliminar(char letra) {
+        Node n = buscar(letra);
+        if (n == null) return false;
+        n.data = null;
+        return true;
+    }
 
-        if (root == null) {
-            root = new Node(letra);
-            pasos.append("El árbol está vacío. Se inserta '").append(letra)
-                    .append("' como nodo raíz.\n");
-            return pasos.toString();
-        }
-
-        Node current = root;
-        pasos.append("Proceso de inserción:\n");
-        for (int i = 0; i < binary.length(); i++) {
-            char bit = binary.charAt(i);
-            pasos.append("Bit ").append(i+1).append(" (").append(bit).append("): ");
-            if (bit == '0') {
-                if (current.left == null) {
-                    current.left = new Node(letra);
-                    pasos.append("No hay nodo a la izquierda, se inserta '").append(letra).append("'.\n");
-                    return pasos.toString();
-                } else {
-                    pasos.append("Ya existe nodo a la izquierda (contiene '")
-                            .append(current.left.data).append("'). Se baja a ese nodo.\n");
-                    current = current.left;
-                }
-            } else { // bit == '1'
-                if (current.right == null) {
-                    current.right = new Node(letra);
-                    pasos.append("No hay nodo a la derecha, se inserta '").append(letra).append("'.\n");
-                    return pasos.toString();
-                } else {
-                    pasos.append("Ya existe nodo a la derecha (contiene '")
-                            .append(current.right.data).append("'). Se baja a ese nodo.\n");
-                    current = current.right;
-                }
-            }
-        }
-        pasos.append("Se recorrieron todos los bits. Se inserta '").append(letra)
-                .append("' en la última posición.\n");
-        current.data = letra;
-        return pasos.toString();
+    public List<String> preorden() {
+        List<String> out = new ArrayList<>();
+        preordenRec(root, out);
+        return out;
+    }
+    private void preordenRec(Node n, List<String> out) {
+        if (n == null) { out.add(""); return; }
+        out.add(n.data == null ? "" : n.data.toString());
+        preordenRec(n.left, out);
+        preordenRec(n.right, out);
     }
 }

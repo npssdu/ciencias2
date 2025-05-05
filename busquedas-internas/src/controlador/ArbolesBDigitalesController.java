@@ -1,53 +1,69 @@
 package controlador;
 
 import modelo.ArbolesBDigitalesModel;
+import modelo.ArbolesBDigitalesModel.Node;
 import vista.ArbolesBDigitalesView;
+
 import javax.swing.*;
 
 public class ArbolesBDigitalesController {
-    private ArbolesBDigitalesModel model;
-    private ArbolesBDigitalesView view;
+    private final ArbolesBDigitalesModel model;
+    private final ArbolesBDigitalesView view;
 
-    public ArbolesBDigitalesController(ArbolesBDigitalesModel model, ArbolesBDigitalesView view) {
-        this.model = model;
-        this.view = view;
-        initController();
-    }
-
-    private void initController() {
-        view.getBtnCrearArbol().addActionListener(e -> crearArbol());
+    public ArbolesBDigitalesController(ArbolesBDigitalesModel m,
+                                       ArbolesBDigitalesView v) {
+        this.model = m;
+        this.view = v;
+        init();
         view.setVisible(true);
     }
 
+    private void init() {
+        view.getBtnCrear().addActionListener(e -> crearArbol());
+        view.getBtnBuscarLetra().addActionListener(e -> buscarLetra());
+        view.getBtnEliminarLetra().addActionListener(e -> eliminarLetra());
+        // guardar/importar quedan igual...
+    }
+
     private void crearArbol() {
-        String palabra = view.getPalabra();
+        String palabra = view.getTxtPalabra();
         if (palabra.isEmpty()) {
-            JOptionPane.showMessageDialog(view, "Ingrese una palabra.");
+            JOptionPane.showMessageDialog(view, "Ingrese palabra.");
             return;
         }
-
-        // Establecer el número de bits custom en base a la longitud de la palabra.
-        int customBits = 5;
-        // int customBits = (palabra.length() - 1) > 0 ? (palabra.length() - 1) : 1;
-        // model.setCustomBits(customBits);
-        // También se ajusta el panel de dibujo para mejorar el espaciado.
-        view.setWordLength(palabra.length());
-
-        // Para cada letra se realiza el proceso de inserción paso a paso.
-        for (int i = 0; i < palabra.length(); i++) {
-            char letra = palabra.charAt(i);
-            String pasos = model.insertarConPasos(letra);
-            // Se muestra el paso a paso en una ventana emergente.
-            JOptionPane.showMessageDialog(view, pasos, "Paso a paso para insertar '" + letra + "'", JOptionPane.INFORMATION_MESSAGE);
-            // Se agrega una breve pausa (opcional) para visualizar cada paso.
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException ex) {
-                // Ignorar interrupciones
-            }
+        view.getConsola().setText("");
+        model.setCustomBits(palabra.length());
+        view.getTreePanel().setWordLength(palabra.length());
+        view.getConsola().append("Palabra: ["
+            + String.join(", ", palabra.split("")) + "]\n");
+        for (char c : palabra.toCharArray()) {
+            String paso = model.insertarConPasos(c);
+            view.getConsola().append(paso + "\n");
         }
+        view.getTreePanel().repaint();
+    }
 
-        // Una vez procesadas todas las letras, se actualiza el dibujo del árbol.
-        view.repaintTree();
+    private void buscarLetra() {
+        String s = JOptionPane.showInputDialog(view, "Letra a buscar:");
+        if (s == null || s.isEmpty()) return;
+        char c = s.charAt(0);
+        Node n = model.buscar(c);
+        if (n != null) {
+            view.getConsola().append("Encontrado '" + c + "'\n");
+            view.getTreePanel().setHighlightedNode(n);
+        } else {
+            view.getConsola().append("No encontrado '" + c + "'\n");
+        }
+    }
+
+    private void eliminarLetra() {
+        String s = JOptionPane.showInputDialog(view, "Letra a eliminar:");
+        if (s == null || s.isEmpty()) return;
+        char c = s.charAt(0);
+        boolean ok = model.eliminar(c);
+        view.getConsola().append(
+            ok ? "Eliminado '" + c + "'\n"
+               : "No existe '" + c + "'\n");
+        view.getTreePanel().repaint();
     }
 }

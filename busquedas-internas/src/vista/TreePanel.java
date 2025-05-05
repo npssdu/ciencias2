@@ -1,187 +1,156 @@
 package vista;
 
 import modelo.ArbolesBDigitalesModel;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Panel que dibuja el árbol y permite:
+ *  - zoom/pan
+ *  - arrastrar nodos
+ *  - colorear nodos vacíos, llenos, y nodo buscado (morado)
+ */
 public class TreePanel extends JPanel {
-
-    private ArbolesBDigitalesModel model;
-    private Map<ArbolesBDigitalesModel.Node, Point> nodePositions = new HashMap<>();
+    private final ArbolesBDigitalesModel model;
+    private final Map<ArbolesBDigitalesModel.Node, Point> nodePositions = new HashMap<>();
     private int wordLength = 0;
 
-    // Variables para el zoom y panning
     private double scale = 1.0;
     private int panX = 0, panY = 0;
-    private Point lastDragPoint = null;
+    private Point lastPanPoint = null;
 
-    // Variables para arrastrar nodos
     private ArbolesBDigitalesModel.Node draggedNode = null;
-    private Point dragOffset = new Point(0, 0);
+    private Point dragOffset = new Point();
+
+    // Nodo resaltado por búsqueda
+    private ArbolesBDigitalesModel.Node highlightedNode = null;
 
     public TreePanel(ArbolesBDigitalesModel model) {
         this.model = model;
         setBackground(Color.WHITE);
-
-        // Mouse listener para arrastrar nodos
         MouseAdapter ma = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                // Si se presiona el botón derecho, iniciamos panning
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    lastDragPoint = e.getPoint();
-                    return;
-                }
-                // En caso de clic izquierdo, buscar si se hizo clic en algún nodo.
-                Point clickPoint = e.getPoint();
-                Point transformed = new Point((int)((clickPoint.x - panX)/scale),
-                        (int)((clickPoint.y - panY)/scale));
-                for (Map.Entry<ArbolesBDigitalesModel.Node, Point> entry : nodePositions.entrySet()) {
-                    Point pos = entry.getValue();
-                    int radius = 15;
-                    if (transformed.distance(pos) <= radius) {
-                        draggedNode = entry.getKey();
-                        dragOffset.x = transformed.x - pos.x;
-                        dragOffset.y = transformed.y - pos.y;
-                        break;
+                    lastPanPoint = e.getPoint();
+                } else {
+                    Point p = transform(e.getPoint());
+                    for (var entry : nodePositions.entrySet()) {
+                        if (entry.getValue().distance(p) <= 15) {
+                            draggedNode = entry.getKey();
+                            dragOffset.x = p.x - entry.getValue().x;
+                            dragOffset.y = p.y - entry.getValue().y;
+                            break;
+                        }
                     }
                 }
             }
-
             @Override
             public void mouseReleased(MouseEvent e) {
+                lastPanPoint = null;
                 draggedNode = null;
-                lastDragPoint = null;
             }
         };
         addMouseListener(ma);
-
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (SwingUtilities.isRightMouseButton(e)) {
-                    // Panning
-                    if (lastDragPoint != null) {
-                        int dx = e.getX() - lastDragPoint.x;
-                        int dy = e.getY() - lastDragPoint.y;
-                        panX += dx;
-                        panY += dy;
-                        lastDragPoint = e.getPoint();
-                        repaint();
-                    }
-                } else {
-                    // Arrastrar nodos
-                    if (draggedNode != null) {
-                        Point newPoint = new Point((int)((e.getX()-panX)/scale - dragOffset.x),
-                                (int)((e.getY()-panY)/scale - dragOffset.y));
-                        nodePositions.put(draggedNode, newPoint);
-                        repaint();
-                    }
+                if (SwingUtilities.isRightMouseButton(e) && lastPanPoint != null) {
+                    panX += e.getX() - lastPanPoint.x;
+                    panY += e.getY() - lastPanPoint.y;
+                    lastPanPoint = e.getPoint();
+                    repaint();
+                } else if (draggedNode != null) {
+                    Point p = transform(e.getPoint());
+                    p.translate(-dragOffset.x, -dragOffset.y);
+                    nodePositions.put(draggedNode, p);
+                    repaint();
                 }
             }
         });
-
-        // Listener para zoom con rueda del mouse.
-        addMouseWheelListener(new MouseWheelListener() {
-            @Override
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                double delta = 0.05f * e.getWheelRotation();
-                scale -= delta;
-                if (scale < 0.1) scale = 0.1;
-                if (scale > 5) scale = 5;
-                repaint();
-            }
+        addMouseWheelListener(e -> {
+            double delta = (e.getWheelRotation() < 0) ? 1.1 : 0.9;
+            scale = Math.max(0.2, Math.min(5.0, scale * delta));
+            repaint();
         });
     }
 
-    // Permite ajustar el espaciado horizontal según la longitud de la palabra.
     public void setWordLength(int length) {
         this.wordLength = length;
     }
 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        // Aplicar la transformación para zoom y panning.
-        Graphics2D g2 = (Graphics2D) g;
-        g2.translate(panX, panY);
-        g2.scale(scale, scale);
+    public void setHighlightedNode(ArbolesBDigitalesModel.Node node) {
+        this.highlightedNode = node;
+        repaint();
+    }
 
-        ArbolesBDigitalesModel.Node root = model.getRoot();
+    private Point transform(Point p) {
+        return new Point((int)((p.x - panX)/scale), (int)((p.y - panY)/scale));
+    }
+
+    @Override
+    protected void paintComponent(Graphics g0) {
+        super.paintComponent(g0);
+        Graphics2D g = (Graphics2D)g0;
+        g.translate(panX, panY);
+        g.scale(scale, scale);
+        var root = model.getRoot();
         if (root != null) {
-            int initialXOffset = Math.max(getWidth()/4, wordLength * 30);
-            drawTree(g2, root, getWidth()/2, 50, 80, initialXOffset);
+            int xOff = Math.max(getWidth()/4, wordLength*30);
+            drawNode(g, root, getWidth()/2, 50, xOff, 80);
         }
     }
 
-    private void drawTree(Graphics g, ArbolesBDigitalesModel.Node node, int x, int y, int yOffset, int xOffset) {
-        // Obtener o asignar posición
+    private void drawNode(Graphics g, ArbolesBDigitalesModel.Node node,
+                          int x, int y, int xOff, int yOff) {
         Point pos = nodePositions.get(node);
         if (pos == null) {
             pos = new Point(x, y);
             nodePositions.put(node, pos);
         } else {
-            x = pos.x;
-            y = pos.y;
+            x = pos.x; y = pos.y;
         }
 
-        int radius = 15;
-        // Dibujo del nodo: óvalo en negro y letra en negrita (blanca)
-        g.setColor(Color.BLACK);
-        g.fillOval(x - radius, y - radius, radius * 2, radius * 2);
-        Font boldFont = new Font("Arial", Font.BOLD, 16);
-        g.setFont(boldFont);
+        // Color del nodo
+        if (node == highlightedNode) {
+            g.setColor(new Color(128, 0, 128)); // morado
+        } else if (node.data == null) {
+            g.setColor(new Color(173, 216, 230)); // azul claro
+        } else {
+            g.setColor(Color.BLACK);
+        }
+        g.fillOval(x-15, y-15, 30, 30);
+
+        g.setFont(g.getFont().deriveFont(Font.BOLD, 14f));
         g.setColor(Color.WHITE);
-        String text = (node.data == null ? "" : node.data.toString());
+        String txt = node.data == null ? "" : node.data.toString();
         FontMetrics fm = g.getFontMetrics();
-        int textWidth = fm.stringWidth(text);
-        int textHeight = fm.getAscent();
-        g.drawString(text, x - textWidth/2, y + textHeight/4);
+        g.drawString(txt, x - fm.stringWidth(txt)/2, y + fm.getAscent()/4);
 
-        // Hijo izquierdo: etiqueta "0" en azul
+        // Hijo izquierdo
         if (node.left != null) {
-            int childX = x - xOffset;
-            int childY = y + yOffset;
-            Point leftPos = nodePositions.get(node.left);
-            if (leftPos == null) {
-                leftPos = new Point(childX, childY);
-                nodePositions.put(node.left, leftPos);
-            } else {
-                childX = leftPos.x;
-                childY = leftPos.y;
-            }
+            Point c = nodePositions.getOrDefault(node.left,
+                new Point(x - xOff, y + yOff));
+            nodePositions.putIfAbsent(node.left, c);
             g.setColor(Color.BLUE);
-            g.drawLine(x, y, childX, childY);
-            int midX = (x + childX) / 2;
-            int midY = (y + childY) / 2;
-            g.setFont(new Font("Arial", Font.BOLD, 12));
-            g.drawString("0", midX - 5, midY - 5);
-
-            drawTree(g, node.left, childX, childY, yOffset, xOffset/2);
+            g.drawLine(x,y,c.x,c.y);
+            g.drawString("0", (x+c.x)/2 -5, (y+c.y)/2 -5);
+            drawNode(g, node.left, c.x, c.y, xOff/2, yOff);
         }
-        // Hijo derecho: etiqueta "1" en rojo
-        if (node.right != null) {
-            int childX = x + xOffset;
-            int childY = y + yOffset;
-            Point rightPos = nodePositions.get(node.right);
-            if (rightPos == null) {
-                rightPos = new Point(childX, childY);
-                nodePositions.put(node.right, rightPos);
-            } else {
-                childX = rightPos.x;
-                childY = rightPos.y;
-            }
-            g.setColor(Color.RED);
-            g.drawLine(x, y, childX, childY);
-            int midX = (x + childX) / 2;
-            int midY = (y + childY) / 2;
-            g.setFont(new Font("Arial", Font.BOLD, 12));
-            g.drawString("1", midX - 5, midY - 5);
 
-            drawTree(g, node.right, childX, childY, yOffset, xOffset/2);
+        // Hijo derecho
+        if (node.right != null) {
+            Point c = nodePositions.getOrDefault(node.right,
+                new Point(x + xOff, y + yOff));
+            nodePositions.putIfAbsent(node.right, c);
+            g.setColor(Color.RED);
+            g.drawLine(x,y,c.x,c.y);
+            g.drawString("1", (x+c.x)/2 -5, (y+c.y)/2 -5);
+            drawNode(g, node.right, c.x, c.y, xOff/2, yOff);
         }
     }
 }
