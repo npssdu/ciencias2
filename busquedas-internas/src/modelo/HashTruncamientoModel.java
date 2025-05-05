@@ -1,46 +1,119 @@
 package modelo;
 
-public class HashTruncamientoModel extends HashModel {
+import java.util.Arrays;
 
-    private int[] posiciones; // Array de posiciones (se asume que son 1-indexadas)
+public class HashTruncamientoModel {
+    private final String[] tabla;
+    private final int tamano;
+    private int[] posiciones; // 1-indexadas
 
-    public HashTruncamientoModel(int tamanoTabla) {
-        super(tamanoTabla);
+    public HashTruncamientoModel(int tamano) {
+        if (tamano <= 0) throw new IllegalArgumentException("Tamaño >0");
+        this.tamano = tamano;
+        this.tabla = new String[tamano];
+        Arrays.fill(this.tabla, null);
     }
 
-    // Setter para las posiciones
+    public int getTamano() {
+        return tamano;
+    }
+
     public void setPosiciones(int[] posiciones) {
         this.posiciones = posiciones;
     }
 
-    @Override
-    protected int calcularHash(String clave) {
-        // Si no se han especificado posiciones, se usa el comportamiento por defecto:
+    /** Calcula hash por truncamiento según posiciones, o por defecto */
+    public int hashBase(String clave) {
+        String s;
         if (posiciones == null || posiciones.length == 0) {
-            int digitos = String.valueOf(tamanoTabla - 1).length();
-            String truncada = (clave.length() > digitos) ? clave.substring(clave.length() - digitos) : clave;
-            try {
-                int num = Integer.parseInt(truncada);
-                return (num + 1) % tamanoTabla;
-            } catch (NumberFormatException e) {
-                return -1;
-            }
+            int dig = String.valueOf(tamano - 1).length();
+            s = clave.length() > dig
+                ? clave.substring(clave.length() - dig)
+                : clave;
         } else {
-            // Se recorren las posiciones especificadas para extraer los dígitos (asumiendo posiciones 1-indexadas)
             StringBuilder sb = new StringBuilder();
-            for (int pos : posiciones) {
-                int idx = pos - 1; // Convertir a índice 0-based
-                if (idx >= 0 && idx < clave.length()) {
+            for (int p : posiciones) {
+                int idx = p - 1;
+                if (idx >= 0 && idx < clave.length())
                     sb.append(clave.charAt(idx));
-                }
             }
-            try {
-                int num = Integer.parseInt(sb.toString());
-                // num = num + 1;
-                return num % tamanoTabla;
-            } catch (NumberFormatException e) {
-                return -1;
+            s = sb.toString();
+        }
+        int v = Integer.parseInt(s) + 1;
+        return v % tamano;
+    }
+
+    /**
+     * Inserta clave:
+     * -1 duplicada;
+     * índice si éxito (lineal+1 wrap);
+     * -2 tabla llena.
+     * Llena `pasos` con detalle.
+     */
+    public int insertar(String clave, StringBuilder pasos) {
+        // duplicada
+        for (String e : tabla) if (clave.equals(e)) {
+            pasos.append("Clave '").append(clave).append("' duplicada.\n");
+            return -1;
+        }
+        int h0 = hashBase(clave);
+        pasos.append("HashBase('").append(clave).append("') = ").append(h0).append("\n");
+        for (int i = 0; i < tamano; i++) {
+            int idx = (h0 + i) % tamano;
+            pasos.append("  intento i=").append(i).append(" → idx=").append(idx);
+            if (tabla[idx] == null) {
+                tabla[idx] = clave;
+                pasos.append(" → libre, insertado.\n");
+                return idx;
+            } else {
+                pasos.append(" → colisión con '").append(tabla[idx]).append("'.\n");
             }
         }
+        pasos.append("Tabla llena, no se puede insertar.\n");
+        return -2;
+    }
+
+    /** Elimina por clave y rehash lineal para compactar */
+    public boolean eliminar(String clave) {
+        boolean ok = false;
+        for (int i = 0; i < tamano; i++) {
+            if (clave.equals(tabla[i])) {
+                tabla[i] = null;
+                ok = true;
+                break;
+            }
+        }
+        if (!ok) return false;
+        // rehash
+        String[] copia = Arrays.copyOf(tabla, tamano);
+        Arrays.fill(tabla, null);
+        for (String s : copia) {
+            if (s != null) {
+                int h0 = hashBase(s);
+                for (int j = 0; j < tamano; j++) {
+                    int idx = (h0 + j) % tamano;
+                    if (tabla[idx] == null) {
+                        tabla[idx] = s;
+                        break;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    /** Busca índice o -1 */
+    public int buscar(String clave) {
+        for (int i = 0; i < tamano; i++)
+            if (clave.equals(tabla[i])) return i;
+        return -1;
+    }
+
+    public String[] getTabla() {
+        return tabla;
+    }
+
+    public void reiniciar() {
+        Arrays.fill(tabla, null);
     }
 }

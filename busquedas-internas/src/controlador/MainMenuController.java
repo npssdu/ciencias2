@@ -76,12 +76,10 @@ public class MainMenuController {
         new HashPlegamientoController(null, v);
     }
 
-    private void abrirHashTruncamiento() {
-        int tamano = solicitarTamano();
-        if(tamano <= 0) return;
-        HashTruncamientoModel modelo = new HashTruncamientoModel(tamano);
-        new HashController(modelo, new HashTruncamientoView());
-    }
+        private void abrirHashTruncamiento() {
+            HashTruncamientoView v = new HashTruncamientoView();
+            new HashTruncamientoController(null, v);
+        }
 
     // --- Métodos para Búsquedas por residuos ---
     private void abrirArbolesBDigitales() {
