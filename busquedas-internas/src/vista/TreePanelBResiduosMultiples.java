@@ -21,6 +21,9 @@ public class TreePanelBResiduosMultiples extends JPanel {
     private int panX = 0, panY = 0;
     private Point lastPanPoint = null;
 
+    // Nodo resaltado
+    private ArbolesBResiduosMultiplesModel.Node highlightedNode = null;
+
     public TreePanelBResiduosMultiples(ArbolesBResiduosMultiplesModel model) {
         this.model = model;
         setBackground(Color.WHITE);
@@ -88,6 +91,12 @@ public class TreePanelBResiduosMultiples extends JPanel {
         this.wordLength = n;
     }
 
+    /** Resalta un nodo específico */
+    public void setHighlightedNode(ArbolesBResiduosMultiplesModel.Node node) {
+        this.highlightedNode = node;
+        repaint();
+    }
+
     @Override
     protected void paintComponent(Graphics g0) {
         super.paintComponent(g0);
@@ -119,7 +128,13 @@ public class TreePanelBResiduosMultiples extends JPanel {
 
         // Dibujar nodo
         int r = 15;
-        g.setColor(Color.BLACK);
+        if (node == highlightedNode) {
+            g.setColor(new Color(128, 0, 128)); // Morado para nodo resaltado
+        } else if (node.data == null) {
+            g.setColor(new Color(173, 216, 230)); // Azul claro para nodos vacíos
+        } else {
+            g.setColor(Color.BLACK);
+        }
         g.fillOval(x - r, y - r, 2 * r, 2 * r);
         g.setColor(Color.WHITE);
         g.setFont(g.getFont().deriveFont(Font.BOLD, 14f));

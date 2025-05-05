@@ -10,6 +10,11 @@ public class ArbolesBResiduosMultiplesView extends JFrame {
     private final JButton btnCalcular;
     private final JButton btnCrear;
     private final TreePanelBResiduosMultiples treePanel;
+    private final JTextArea consola;
+    private final JButton btnBuscarLetra;
+    private final JButton btnEliminarLetra;
+    private final JButton btnGuardar;
+    private final JButton btnImportar;
 
     public ArbolesBResiduosMultiplesView(ArbolesBResiduosMultiplesModel model) {
         setTitle("Árboles B Residuos Múltiples");
@@ -34,12 +39,31 @@ public class ArbolesBResiduosMultiplesView extends JFrame {
         btnCrear.setEnabled(false);
         top.add(btnCrear);
 
+        btnBuscarLetra = new JButton("Buscar Letra");
+        top.add(btnBuscarLetra);
+        btnEliminarLetra = new JButton("Eliminar Letra");
+        top.add(btnEliminarLetra);
+        btnGuardar = new JButton("Guardar CSV");
+        top.add(btnGuardar);
+        btnImportar = new JButton("Importar CSV");
+        top.add(btnImportar);
+
         // Panel de dibujo
         treePanel = new TreePanelBResiduosMultiples(model);
 
-        setLayout(new BorderLayout(5,5));
+        consola = new JTextArea();
+        consola.setEditable(false);
+        JScrollPane consolaScroll = new JScrollPane(consola);
+        consolaScroll.setPreferredSize(new Dimension(300, getHeight()));
+        consolaScroll.setBorder(BorderFactory.createTitledBorder("Consola"));
+
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                                          new JScrollPane(treePanel), consolaScroll);
+        split.setResizeWeight(0.7);
+
+        setLayout(new BorderLayout());
         add(top, BorderLayout.NORTH);
-        add(new JScrollPane(treePanel), BorderLayout.CENTER);
+        add(split, BorderLayout.CENTER);
     }
 
     public String getPalabra() {
@@ -58,11 +82,35 @@ public class ArbolesBResiduosMultiplesView extends JFrame {
         return btnCrear;
     }
 
+    public JTextArea getConsola() {
+        return consola;
+    }
+
+    public JButton getBtnBuscarLetra() {
+        return btnBuscarLetra;
+    }
+
+    public JButton getBtnEliminarLetra() {
+        return btnEliminarLetra;
+    }
+
+    public JButton getBtnGuardar() {
+        return btnGuardar;
+    }
+
+    public JButton getBtnImportar() {
+        return btnImportar;
+    }
+
     public void repaintTree() {
         treePanel.repaint();
     }
 
     public void setWordLength(int n) {
         treePanel.setWordLength(n);
+    }
+
+    public TreePanelBResiduosMultiples getTreePanel() {
+        return treePanel;
     }
 }

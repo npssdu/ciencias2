@@ -3,6 +3,8 @@ package controlador;
 import modelo.ArbolesBResiduosMultiplesModel;
 import vista.ArbolesBResiduosMultiplesView;
 import javax.swing.*;
+import java.nio.file.*;
+import java.io.*;
 
 public class ArbolesBResiduosMultiplesController {
     private final ArbolesBResiduosMultiplesModel model;
@@ -20,6 +22,10 @@ public class ArbolesBResiduosMultiplesController {
     private void init() {
         view.getBtnCalcular().addActionListener(e -> onCalcular());
         view.getBtnCrear().addActionListener(e -> onCrear());
+        view.getBtnBuscarLetra().addActionListener(e -> buscarLetra());
+        view.getBtnEliminarLetra().addActionListener(e -> eliminarLetra());
+        view.getBtnGuardar().addActionListener(e -> guardarCSV());
+        view.getBtnImportar().addActionListener(e -> importarCSV());
         view.setVisible(true);
     }
 
@@ -50,12 +56,107 @@ public class ArbolesBResiduosMultiplesController {
             return;
         }
 
+        view.getConsola().setText("Palabra: [" + String.join(", ", palabra.split("")) + "]\n");
         view.setWordLength(palabra.length());
+
         for (char c : palabra.toCharArray()) {
             String pasos = model.insertarConPasos(c);
-            JOptionPane.showMessageDialog(view, pasos,
-                "Insertando '" + c + "'", JOptionPane.INFORMATION_MESSAGE);
+            view.getConsola().append(pasos + "\n");
+        }
+
+        view.repaintTree();
+    }
+
+    private void buscarLetra() {
+        String input = JOptionPane.showInputDialog(view, "Ingrese la letra a buscar:");
+        if (input == null || input.isEmpty()) return;
+        char letra = input.charAt(0);
+        var nodo = buscarNodo(model.getRoot(), letra);
+        if (nodo != null) {
+            view.getConsola().append("Encontrado: '" + letra + "'\n");
+            view.getTreePanel().setHighlightedNode(nodo); // Use getTreePanel to highlight the node
+        } else {
+            view.getConsola().append("No encontrado: '" + letra + "'\n");
+        }
+    }
+
+    private ArbolesBResiduosMultiplesModel.Node buscarNodo(ArbolesBResiduosMultiplesModel.Node node, char letra) {
+        if (node == null) return null;
+        if (node.data != null && node.data == letra) return node;
+        for (var child : node.children) {
+            var found = buscarNodo(child, letra);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    private void eliminarLetra() {
+        String input = JOptionPane.showInputDialog(view, "Ingrese la letra a eliminar:");
+        if (input == null || input.isEmpty()) return;
+        char letra = input.charAt(0);
+        if (eliminarNodo(model.getRoot(), letra)) {
+            view.getConsola().append("Eliminado: '" + letra + "'\n");
+        } else {
+            view.getConsola().append("No encontrado: '" + letra + "'\n");
         }
         view.repaintTree();
+    }
+
+    private boolean eliminarNodo(ArbolesBResiduosMultiplesModel.Node node, char letra) {
+        if (node == null) return false;
+        if (node.data != null && node.data == letra) {
+            node.data = null;
+            return true;
+        }
+        for (var child : node.children) {
+            if (eliminarNodo(child, letra)) return true;
+        }
+        return false;
+    }
+
+    private void guardarCSV() {
+        try {
+            Path dir = Paths.get("archivos/ArbolesBResiduosMultiples");
+            Files.createDirectories(dir);
+            String palabra = view.getPalabra();
+            if (palabra.isEmpty()) {
+                JOptionPane.showMessageDialog(view, "No hay datos para guardar.");
+                return;
+            }
+            Path file = dir.resolve("arbol_" + palabra + ".csv");
+            try (BufferedWriter writer = Files.newBufferedWriter(file)) {
+                writer.write("Palabra," + palabra + "\n");
+                writer.write("Estructura del árbol:\n");
+                guardarNodo(writer, model.getRoot(), 0);
+            }
+            JOptionPane.showMessageDialog(view, "Datos guardados en: " + file);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(view, "Error al guardar: " + e.getMessage());
+        }
+    }
+
+    private void guardarNodo(BufferedWriter writer, ArbolesBResiduosMultiplesModel.Node node, int depth) throws IOException {
+        if (node == null) return;
+        writer.write("  ".repeat(depth) + (node.data == null ? "Vacío" : node.data) + "\n");
+        for (var child : node.children) {
+            guardarNodo(writer, child, depth + 1);
+        }
+    }
+
+    private void importarCSV() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        if (chooser.showOpenDialog(view) == JFileChooser.APPROVE_OPTION) {
+            File file = chooser.getSelectedFile();
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                view.getConsola().append("Importando desde: " + file.getName() + "\n");
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    view.getConsola().append(line + "\n");
+                }
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(view, "Error al importar: " + e.getMessage());
+            }
+        }
     }
 }
