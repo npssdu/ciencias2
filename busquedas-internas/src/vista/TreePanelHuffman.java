@@ -10,6 +10,7 @@ import java.util.Map;
 public class TreePanelHuffman extends JPanel {
     private ArbolesHuffmanModel model;
     private Map<ArbolesHuffmanModel.Node, Point> pos = new HashMap<>();
+    private ArbolesHuffmanModel.Node highlightedNode = null;
 
     // Zoom y pan
     private double scale = 1.0;
@@ -50,6 +51,11 @@ public class TreePanelHuffman extends JPanel {
         });
     }
 
+    public void setHighlightedNode(ArbolesHuffmanModel.Node node) {
+        this.highlightedNode = node;
+        repaint();
+    }
+
     @Override
     protected void paintComponent(Graphics g0) {
         super.paintComponent(g0);
@@ -58,7 +64,9 @@ public class TreePanelHuffman extends JPanel {
         g.scale(scale, scale);
         var root = model.getRoot();
         if (root != null) {
-            drawNode(g, root, getWidth()/2, 50, getWidth()/4, 80);
+            int w = getWidth();
+            int xOff = Math.max(w / 4, 30);
+            drawNode(g, root, w / 2, 50, xOff, 80);
         }
     }
 
@@ -70,9 +78,15 @@ public class TreePanelHuffman extends JPanel {
 
         int r = 20;
         // color según tipo
-        if (node == model.getRoot())         g.setColor(Color.ORANGE);
-        else if (node.symbol == null)        g.setColor(new Color(173,216,230)); // light blue
-        else                                 g.setColor(Color.GREEN);
+        if (node == highlightedNode) {
+            g.setColor(new Color(128, 0, 128)); // Purple for highlighted node
+        } else if (node == model.getRoot()) {
+            g.setColor(Color.ORANGE);
+        } else if (node.symbol == null) {
+            g.setColor(new Color(173,216,230)); // light blue
+        } else {
+            g.setColor(Color.GREEN);
+        }
 
         g.fillOval(x-r, y-r, 2*r, 2*r);
 

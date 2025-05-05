@@ -5,6 +5,8 @@ import vista.ArbolesHuffmanView;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.util.Map;
+import java.nio.file.*;
+import java.io.*;
 
 public class ArbolesHuffmanController {
     private ArbolesHuffmanModel model;
@@ -18,6 +20,10 @@ public class ArbolesHuffmanController {
 
     private void init() {
         view.getBtnCrear().addActionListener(e -> crear());
+        view.getBtnBuscarLetra().addActionListener(e -> buscarLetra());
+        view.getBtnEliminarLetra().addActionListener(e -> eliminarLetra());
+        view.getBtnGuardar().addActionListener(e -> guardarCSV());
+        view.getBtnImportar().addActionListener(e -> importarCSV());
         view.setVisible(true);
     }
 
@@ -28,35 +34,97 @@ public class ArbolesHuffmanController {
             return;
         }
 
-        // paso a paso: get lista de strings
+        view.getConsola().setText("Palabra: [" + String.join(", ", palabra.split("")) + "]\n");
         var pasos = model.buildTree(palabra);
         for (String paso : pasos) {
-            // usando JTextArea en JOptionPane para tablas multilinea
-            JTextArea area = new JTextArea(paso);
-            area.setEditable(false);
-            JOptionPane.showMessageDialog(view, new JScrollPane(area),
-                    "Construcción árbol Huffman", JOptionPane.INFORMATION_MESSAGE);
+            view.getConsola().append(paso + "\n");
         }
-
-        // finalmente, mostrar tabla completa Ki,Binario,Pi,Li,L
-        DefaultTableModel tm = new DefaultTableModel(
-                new String[]{"Ki","Binario","Pi","Li","L"}, 0);
-        Map<Character,String> codes = model.getCodes();
-        Map<Character,Double> probs = model.getProbabilities();
-        for (var e : codes.entrySet()) {
-            char k = e.getKey();
-            String bin = e.getValue();
-            double pi = probs.get(k);
-            int li = bin.length();
-            // L = límite prefijo = li + pi?
-            // si el Excel define L, aquí asumimos L = li + pi
-            double L = li + pi;
-            tm.addRow(new Object[]{k, bin, pi, li, L});
-        }
-        JTable table = new JTable(tm);
-        JOptionPane.showMessageDialog(view, new JScrollPane(table),
-                "Tabla de códigos Huffman", JOptionPane.INFORMATION_MESSAGE);
-
         view.repaintTree();
+    }
+
+    private void buscarLetra() {
+        String input = JOptionPane.showInputDialog(view, "Ingrese la letra a buscar:");
+        if (input == null || input.isEmpty()) return;
+        char letra = input.charAt(0);
+        var nodo = buscarNodo(model.getRoot(), letra);
+        if (nodo != null) {
+            view.getConsola().append("Encontrado: '" + letra + "'\n");
+            view.getTreePanel().setHighlightedNode(nodo); // Highlight the node in purple
+        } else {
+            view.getConsola().append("No encontrado: '" + letra + "'\n");
+        }
+    }
+
+    private ArbolesHuffmanModel.Node buscarNodo(ArbolesHuffmanModel.Node node, char letra) {
+        if (node == null) return null;
+        if (node.symbol != null && node.symbol == letra) return node;
+        var left = buscarNodo(node.left, letra);
+        return left != null ? left : buscarNodo(node.right, letra);
+    }
+
+    private void eliminarLetra() {
+        String input = JOptionPane.showInputDialog(view, "Ingrese la letra a eliminar:");
+        if (input == null || input.isEmpty()) return;
+        char letra = input.charAt(0);
+        if (eliminarNodo(model.getRoot(), letra)) {
+            view.getConsola().append("Eliminado: '" + letra + "'\n");
+        } else {
+            view.getConsola().append("No encontrado: '" + letra + "'\n");
+        }
+        view.repaintTree();
+    }
+
+    private boolean eliminarNodo(ArbolesHuffmanModel.Node node, char letra) {
+        if (node == null) return false;
+        if (node.symbol != null && node.symbol == letra) {
+            node.symbol = null;
+            return true;
+        }
+        return eliminarNodo(node.left, letra) || eliminarNodo(node.right, letra);
+    }
+
+    private void guardarCSV() {
+        try {
+            Path dir = Paths.get("archivos/ArbolesHuffman");
+            Files.createDirectories(dir);
+            String palabra = view.getPalabra();
+            if (palabra.isEmpty()) {
+                JOptionPane.showMessageDialog(view, "No hay datos para guardar.");
+                return;
+            }
+            Path file = dir.resolve("arbol_" + palabra + ".csv");
+            try (BufferedWriter writer = Files.newBufferedWriter(file)) {
+                writer.write("Palabra," + palabra + "\n");
+                writer.write("Estructura del árbol:\n");
+                guardarNodo(writer, model.getRoot(), 0);
+            }
+            JOptionPane.showMessageDialog(view, "Datos guardados en: " + file);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(view, "Error al guardar: " + e.getMessage());
+        }
+    }
+
+    private void guardarNodo(BufferedWriter writer, ArbolesHuffmanModel.Node node, int depth) throws IOException {
+        if (node == null) return;
+        writer.write("  ".repeat(depth) + (node.symbol == null ? "Vacío" : node.symbol) + "\n");
+        guardarNodo(writer, node.left, depth + 1);
+        guardarNodo(writer, node.right, depth + 1);
+    }
+
+    private void importarCSV() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        if (chooser.showOpenDialog(view) == JFileChooser.APPROVE_OPTION) {
+            File file = chooser.getSelectedFile();
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                view.getConsola().append("Importando desde: " + file.getName() + "\n");
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    view.getConsola().append(line + "\n");
+                }
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(view, "Error al importar: " + e.getMessage());
+            }
+        }
     }
 }
