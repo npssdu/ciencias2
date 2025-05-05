@@ -2,6 +2,7 @@ package controlador;
 
 import modelo.ArbolesBResiduosParticularModel;
 import vista.ArbolesBResiduosParticularView;
+import vista.TreePanelBResiduosParticular; // Import the TreePanelBResiduosParticular class
 import javax.swing.*;
 import java.io.*;
 import java.nio.file.*;
@@ -34,32 +35,28 @@ public class ArbolesBResiduosParticularController {
             return;
         }
 
-        // Fijamos siempre 5 bits
-        // (no hace falta setCustomBits, pues el modelo usa internamente 5)
+        view.getConsola().setText("Palabra: [" + String.join(", ", palabra.split("")) + "]\n");
         view.setWordLength(palabra.length());
 
         for (char c : palabra.toCharArray()) {
             String pasos = model.insertarConPasos(c);
-            JOptionPane.showMessageDialog(
-                    view,
-                    pasos,
-                    "Insertando '" + c + "'",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-            try { Thread.sleep(300); } catch (InterruptedException ignored) {}
+            view.getConsola().append(pasos + "\n");
         }
 
         view.repaintTree();
     }
 
     private void buscarLetra() {
-        String input = JOptionPane.showInputDialog(view, "Letra a buscar:");
-        if (input == null || input.isEmpty()) return;
+        String input = JOptionPane.showInputDialog(view, "Ingrese la letra a buscar:");
+        if (input == null || input.isEmpty()) {
+            JOptionPane.showMessageDialog(view, "No se ingresó ninguna letra.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         char letra = input.charAt(0);
         var nodo = buscarNodo(model.getRoot(), letra);
         if (nodo != null) {
             view.getConsola().append("Encontrado: '" + letra + "'\n");
-            view.getTreePanel().setHighlightedNode(nodo); // Use getTreePanel to highlight the node
+            view.getTreePanel().setHighlightedNode(nodo); // Highlight the node
         } else {
             view.getConsola().append("No encontrado: '" + letra + "'\n");
         }
@@ -73,7 +70,7 @@ public class ArbolesBResiduosParticularController {
     }
 
     private void eliminarLetra() {
-        String input = JOptionPane.showInputDialog(view, "Letra a eliminar:");
+        String input = JOptionPane.showInputDialog(view, "Ingrese la letra a eliminar:");
         if (input == null || input.isEmpty()) return;
         char letra = input.charAt(0);
         if (eliminarNodo(model.getRoot(), letra)) {

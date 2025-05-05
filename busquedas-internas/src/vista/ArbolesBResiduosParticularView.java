@@ -26,7 +26,6 @@ public class ArbolesBResiduosParticularView extends JFrame {
         top.add(txtPalabra);
         btnCrearArbol = new JButton("Crear Árbol");
         top.add(btnCrearArbol);
-
         btnBuscarLetra = new JButton("Buscar Letra");
         top.add(btnBuscarLetra);
         btnEliminarLetra = new JButton("Eliminar Letra");
@@ -80,6 +79,7 @@ public class ArbolesBResiduosParticularView extends JFrame {
     public JButton getBtnImportar() {
         return btnImportar;
     }
+
     public TreePanelBResiduosParticular getTreePanel() {
         return treePanel;
     }
