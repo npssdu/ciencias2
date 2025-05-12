@@ -14,6 +14,7 @@ public class HashTruncamientoView extends JFrame {
     private final DefaultTableModel tableModel;
     private final JTextArea terminal;
     private final RowHighlighter highlighter;
+    private final JComboBox<String> collisionMethodCombo; // Combo box for collision method
 
     public HashTruncamientoView() {
         super("Hash Truncamiento");
@@ -34,6 +35,9 @@ public class HashTruncamientoView extends JFrame {
         pTop.add(txtPos);
         btnCrear = new JButton("Crear");
         pTop.add(btnCrear);
+        collisionMethodCombo = new JComboBox<>(new String[]{"Lineal", "Cuadrática", "Estructuras Anidadas", "Estructuras Enlazadas"});
+        pTop.add(new JLabel("Método de Colisión:"));
+        pTop.add(collisionMethodCombo);
 
         // Tabla
         tableModel = new DefaultTableModel(new Object[]{"Índice","Clave"},0);
@@ -95,4 +99,7 @@ public class HashTruncamientoView extends JFrame {
     public DefaultTableModel getTableModel() { return tableModel; }
     public RowHighlighter getHighlighter()   { return highlighter; }
     public JTextArea getTerminal()           { return terminal; }
+    public JComboBox<String> getCollisionMethodCombo() {
+        return collisionMethodCombo;
+    }
 }
