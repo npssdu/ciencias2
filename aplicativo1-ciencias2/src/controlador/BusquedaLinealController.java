@@ -50,24 +50,29 @@ public class BusquedaLinealController {
 
     private void insertar() {
         if (model == null) {
+            log("Error: No se ha definido el tamaño de la estructura.");
             JOptionPane.showMessageDialog(view, "Defina tamaño");
             return;
         }
         String clave = view.getTxtClave();
         if (clave.isEmpty()) {
+            log("Error: Clave vacía.");
             JOptionPane.showMessageDialog(view, "Clave vacía");
             return;
         }
         try {
             int keyLength = Integer.parseInt(view.getTxtKeyLength());
             if (clave.length() != keyLength) {
+                log("Error: La clave debe tener exactamente " + keyLength + " caracteres.");
                 JOptionPane.showMessageDialog(view, "La clave debe tener exactamente " + keyLength + " caracteres.");
                 return;
             }
+            log("Intentando insertar clave: " + clave);
             model.insertar(clave);
-            log("Clave insertada: " + clave);
+            log("Clave insertada exitosamente: " + clave);
             actualizarTabla();
         } catch (NumberFormatException ex) {
+            log("Error: Longitud de clave inválida.");
             JOptionPane.showMessageDialog(view, "Longitud de clave inválida");
         }
     }

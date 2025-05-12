@@ -58,47 +58,30 @@ public class HashTruncamientoController {
 
     private void insertar() {
         if (model == null) {
+            log("Error: No se ha definido el tamaño de la estructura.");
             JOptionPane.showMessageDialog(view, "Defina tamaño");
             return;
         }
         String clave = view.getTxtClave();
         if (clave.isEmpty()) {
+            log("Error: Clave vacía.");
             JOptionPane.showMessageDialog(view, "Clave vacía");
             return;
         }
         try {
             int keyLength = Integer.parseInt(view.getTxtKeyLength());
             if (clave.length() != keyLength) {
+                log("Error: La clave debe tener exactamente " + keyLength + " caracteres.");
                 JOptionPane.showMessageDialog(view, "La clave debe tener exactamente " + keyLength + " caracteres.");
                 return;
             }
+            log("Intentando insertar clave: " + clave);
             StringBuilder pasos = new StringBuilder();
-            int res = model.insertar(clave, pasos);
-            log(pasos.toString());
-            switch (res) {
-                case -1:
-                    JOptionPane.showMessageDialog(view, "Clave duplicada");
-                    return;
-                case -2:
-                    JOptionPane.showMessageDialog(view, "Tabla llena");
-                    return;
-                default:
-                    log("Insertado '" + clave + "' en índice " + res);
-                    actualizarTabla();
-                    int base = model.hashBase(clave);
-                    if (res != base) {
-                        int choice = JOptionPane.showOptionDialog(view,
-                            "Colisión al insertar '" + clave + "'.\n" +
-                            "Índice base=" + base + ", resuelto en " + res,
-                            "Colisión", JOptionPane.DEFAULT_OPTION,
-                            JOptionPane.INFORMATION_MESSAGE, null,
-                            new String[]{"Solucionar colisión"}, "Solucionar colisión");
-                        view.getHighlighter().highlight(res, Color.ORANGE);
-                    } else {
-                        view.getHighlighter().highlight(res, Color.CYAN);
-                    }
-            }
+            model.insertar(clave, pasos);
+            log("Clave insertada exitosamente: " + clave + "\n" + pasos);
+            actualizarTabla();
         } catch (NumberFormatException ex) {
+            log("Error: Longitud de clave inválida.");
             JOptionPane.showMessageDialog(view, "Longitud de clave inválida");
         }
     }

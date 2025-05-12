@@ -48,23 +48,28 @@ public class BusquedaBinariaController {
 
     private void insertar() {
         if (model == null) {
+            log("Error: No se ha definido el tamaño de la estructura.");
             JOptionPane.showMessageDialog(view, "Defina tamaño");
             return;
         }
         String clave = view.getTxtClave();
         if (clave.isEmpty()) {
+            log("Error: Clave vacía.");
             JOptionPane.showMessageDialog(view, "Clave vacía");
             return;
         }
         try {
             int claveInt = Integer.parseInt(clave); // Convertir clave a int
+            log("Intentando insertar clave: " + claveInt);
             if (model.insertar(claveInt)) {
-                log("Clave insertada: " + claveInt);
+                log("Clave insertada exitosamente: " + claveInt);
                 actualizarTabla();
             } else {
+                log("Error: No se pudo insertar la clave. Verifique duplicados o tamaño máximo.");
                 JOptionPane.showMessageDialog(view, "No se pudo insertar la clave. Verifique duplicados o tamaño máximo.");
             }
         } catch (NumberFormatException ex) {
+            log("Error: Clave debe ser un número entero válido.");
             JOptionPane.showMessageDialog(view, "Clave debe ser un número entero válido.");
         }
     }
