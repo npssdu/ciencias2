@@ -182,4 +182,8 @@ public class MainMenuView extends JFrame {
     public JButton getBtnArboles2DKD() {
       return btnArboles2DKD;
     }
+
+    public JTabbedPane getTabbedPane() {
+        return tabbedPane;
+    }
 }

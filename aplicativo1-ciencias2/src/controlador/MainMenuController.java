@@ -36,6 +36,9 @@ public class MainMenuController {
         view.getBtnMetodosElementales().addActionListener(e -> abrirMetodosElementales());
         view.getBtnMetodosRejilla().addActionListener(e -> abrirMetodosRejilla());
         view.getBtnArboles2DKD().addActionListener(e -> abrirArboles2DKD());
+
+        // Integración de la pestaña "Estructuras dinámicas"
+        abrirEstructurasDinamicas();
     }
 
     // Método auxiliar que solicita al usuario el tamaño de la estructura
@@ -119,4 +122,14 @@ public class MainMenuController {
     private void abrirArboles2DKD() {
         JOptionPane.showMessageDialog(view, "Abriendo ventana para Árboles 2D (KD).\n(Pendiente la implementación del algoritmo)");
     }
+        private void abrirEstructurasDinamicas() {
+        // 1) Crear vista y controlador de Expansiones Totales
+        ExpansionesTotalesView etView = new ExpansionesTotalesView();
+        ExpansionesTotalesModel etModel = new ExpansionesTotalesModel(2);
+        new ExpansionesTotalesController(etModel, etView);
+
+        // 2) Añadir la vista como nueva pestaña
+        view.getTabbedPane().addTab("Estructuras dinámicas", etView);
+    }
 }
+
