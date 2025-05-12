@@ -57,34 +57,49 @@ public class HashTruncamientoController {
     }
 
     private void insertar() {
-        if (model == null) { JOptionPane.showMessageDialog(view, "Defina tamaño"); return; }
+        if (model == null) {
+            JOptionPane.showMessageDialog(view, "Defina tamaño");
+            return;
+        }
         String clave = view.getTxtClave();
-        if (clave.isEmpty()) return;
-        StringBuilder pasos = new StringBuilder();
-        int res = model.insertar(clave, pasos);
-        log(pasos.toString());
-        switch (res) {
-            case -1:
-                JOptionPane.showMessageDialog(view, "Clave duplicada");
+        if (clave.isEmpty()) {
+            JOptionPane.showMessageDialog(view, "Clave vacía");
+            return;
+        }
+        try {
+            int keyLength = Integer.parseInt(view.getTxtKeyLength());
+            if (clave.length() != keyLength) {
+                JOptionPane.showMessageDialog(view, "La clave debe tener exactamente " + keyLength + " caracteres.");
                 return;
-            case -2:
-                JOptionPane.showMessageDialog(view, "Tabla llena");
-                return;
-            default:
-                log("Insertado '" + clave + "' en índice " + res);
-                actualizarTabla();
-                int base = model.hashBase(clave);
-                if (res != base) {
-                    int choice = JOptionPane.showOptionDialog(view,
-                        "Colisión al insertar '" + clave + "'.\n" +
-                        "Índice base=" + base + ", resuelto en " + res,
-                        "Colisión", JOptionPane.DEFAULT_OPTION,
-                        JOptionPane.INFORMATION_MESSAGE, null,
-                        new String[]{"Solucionar colisión"}, "Solucionar colisión");
-                    view.getHighlighter().highlight(res, Color.ORANGE);
-                } else {
-                    view.getHighlighter().highlight(res, Color.CYAN);
-                }
+            }
+            StringBuilder pasos = new StringBuilder();
+            int res = model.insertar(clave, pasos);
+            log(pasos.toString());
+            switch (res) {
+                case -1:
+                    JOptionPane.showMessageDialog(view, "Clave duplicada");
+                    return;
+                case -2:
+                    JOptionPane.showMessageDialog(view, "Tabla llena");
+                    return;
+                default:
+                    log("Insertado '" + clave + "' en índice " + res);
+                    actualizarTabla();
+                    int base = model.hashBase(clave);
+                    if (res != base) {
+                        int choice = JOptionPane.showOptionDialog(view,
+                            "Colisión al insertar '" + clave + "'.\n" +
+                            "Índice base=" + base + ", resuelto en " + res,
+                            "Colisión", JOptionPane.DEFAULT_OPTION,
+                            JOptionPane.INFORMATION_MESSAGE, null,
+                            new String[]{"Solucionar colisión"}, "Solucionar colisión");
+                        view.getHighlighter().highlight(res, Color.ORANGE);
+                    } else {
+                        view.getHighlighter().highlight(res, Color.CYAN);
+                    }
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(view, "Longitud de clave inválida");
         }
     }
 

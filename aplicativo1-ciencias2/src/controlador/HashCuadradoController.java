@@ -46,27 +46,27 @@ public class HashCuadradoController {
     }
 
     private void insertar() {
-        if (model == null) { JOptionPane.showMessageDialog(view,"Defina tamaño"); return; }
+        if (model == null) {
+            JOptionPane.showMessageDialog(view, "Defina tamaño");
+            return;
+        }
         String clave = view.getTxtClave();
-        if (clave.isEmpty()) return;
-        StringBuilder pasos = new StringBuilder();
-        int res = model.insertar(clave, pasos);
-        log(pasos.toString());
-        switch(res) {
-            case -1:
-                JOptionPane.showMessageDialog(view,"Clave duplicada");
+        if (clave.isEmpty()) {
+            JOptionPane.showMessageDialog(view, "Clave vacía");
+            return;
+        }
+        try {
+            int keyLength = Integer.parseInt(view.getTxtKeyLength());
+            if (clave.length() != keyLength) {
+                JOptionPane.showMessageDialog(view, "La clave debe tener exactamente " + keyLength + " caracteres.");
                 return;
-            case -2:
-                JOptionPane.showMessageDialog(view,"Tabla llena");
-                return;
-            default:
-                log("Insertado '" + clave + "' en índice " + res);
-                actualizarTabla();
-                int h0 = Integer.parseInt(clave);
-                h0 = h0*h0;
-                // colisión detectada si primer hash != res
-                // no recalculamos, simplemente resaltamos naranja
-                view.getHighlighter().highlight(res, Color.ORANGE);
+            }
+            StringBuilder pasos = new StringBuilder();
+            model.insertar(clave, pasos);
+            log("Clave insertada: " + clave + "\n" + pasos);
+            actualizarTabla();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(view, "Longitud de clave inválida");
         }
     }
 

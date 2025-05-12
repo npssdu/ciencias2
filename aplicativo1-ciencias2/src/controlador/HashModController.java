@@ -46,33 +46,26 @@ public class HashModController {
     }
 
     private void insertar() {
-        if (model == null) { JOptionPane.showMessageDialog(view,"Defina tamaño"); return; }
+        if (model == null) {
+            JOptionPane.showMessageDialog(view, "Defina tamaño");
+            return;
+        }
         String clave = view.getTxtClave();
-        if (clave.isEmpty()) return;
-        int res = model.insertar(clave);
-        switch(res) {
-            case -1:
-                JOptionPane.showMessageDialog(view,"Clave repetida");
+        if (clave.isEmpty()) {
+            JOptionPane.showMessageDialog(view, "Clave vacía");
+            return;
+        }
+        try {
+            int keyLength = Integer.parseInt(view.getTxtKeyLength());
+            if (clave.length() != keyLength) {
+                JOptionPane.showMessageDialog(view, "La clave debe tener exactamente " + keyLength + " caracteres.");
                 return;
-            case -2:
-                JOptionPane.showMessageDialog(view,"Tabla llena");
-                return;
-            default:
-                // éxito o colisión resuelta
-                log("Insert '" + clave + "' en índice " + res);
-                actualizarTabla();
-                // si colisión (i != hash original)
-                int orig = Integer.parseInt(clave) % model.getTamano();
-                if (res != orig) {
-                    JOptionPane.showOptionDialog(view,
-                        "Colisión al insertar '" + clave + "'.\nÍndice original=" + orig +
-                        ", resuelto en " + res,
-                        "Colisión", JOptionPane.DEFAULT_OPTION,
-                        JOptionPane.INFORMATION_MESSAGE, null, new String[]{"OK"}, "OK");
-                    view.getHighlighter().highlight(res, Color.ORANGE);
-                } else {
-                    view.getHighlighter().highlight(res, Color.CYAN);
-                }
+            }
+            model.insertar(clave);
+            log("Clave insertada: " + clave);
+            actualizarTabla();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(view, "Longitud de clave inválida");
         }
     }
 

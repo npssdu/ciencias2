@@ -49,15 +49,26 @@ public class BusquedaLinealController {
     }
 
     private void insertar() {
-        String c = view.getTxtClave();
-        if (model == null) { JOptionPane.showMessageDialog(view,"Defina tamaño"); return; }
-        if (model.insertar(c)) {
+        if (model == null) {
+            JOptionPane.showMessageDialog(view, "Defina tamaño");
+            return;
+        }
+        String clave = view.getTxtClave();
+        if (clave.isEmpty()) {
+            JOptionPane.showMessageDialog(view, "Clave vacía");
+            return;
+        }
+        try {
+            int keyLength = Integer.parseInt(view.getTxtKeyLength());
+            if (clave.length() != keyLength) {
+                JOptionPane.showMessageDialog(view, "La clave debe tener exactamente " + keyLength + " caracteres.");
+                return;
+            }
+            model.insertar(clave);
+            log("Clave insertada: " + clave);
             actualizarTabla();
-            int row = model.getDatos().size()-1;
-            view.getHighlighter().highlight(row, Color.CYAN);
-            log("Insertado '" + c + "'");
-        } else {
-            JOptionPane.showMessageDialog(view,"No se puede insertar");
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(view, "Longitud de clave inválida");
         }
     }
 
