@@ -25,15 +25,14 @@ public class MainMenuView extends JFrame {
     private JButton btnArbolesBResiduosParticular;
     private JButton btnArbolesBResiduosMultiples;
 
+    // Pestaña: Estructuras dinámicas
+    private JPanel panelEstructurasDinamicas;
+    private JButton btnExpansionTotal;
+    private JButton btnExpansionParcial;
+
     // Pestaña 3: Árboles de Huffman
     private JPanel panelHuffman;
     private JButton btnArbolesHuffman;
-
-    // Pestaña 4: Búsquedas por rangos
-    private JPanel panelRangos;
-    private JButton btnMetodosElementales;
-    private JButton btnMetodosRejilla;
-    private JButton btnArboles2DKD;
 
     public MainMenuView() {
         setTitle("Aplicación Ciencias de la Computación II");
@@ -108,28 +107,19 @@ public class MainMenuView extends JFrame {
 
         tabbedPane.addTab("Árboles Búsquedas por residuos", panelResiduos);
 
+        // --- Pestaña: Estructuras dinámicas ---
+        panelEstructurasDinamicas = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+        btnExpansionTotal = new JButton("Expansión Total");
+        btnExpansionParcial = new JButton("Expansión Parcial");
+        panelEstructurasDinamicas.add(btnExpansionTotal);
+        panelEstructurasDinamicas.add(btnExpansionParcial);
+        tabbedPane.addTab("Estructuras dinámicas", panelEstructurasDinamicas);
+
         // --- Pestaña 3: Árboles de Huffman ---
         panelHuffman = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         btnArbolesHuffman = new JButton("Arboles de Huffman");
         panelHuffman.add(btnArbolesHuffman);
         tabbedPane.addTab("Huffman", panelHuffman);
-
-        // --- Pestaña 4: Búsquedas por rangos ---
-        panelRangos = new JPanel(new GridBagLayout());
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        btnMetodosElementales = new JButton("Métodos Elementales");
-        panelRangos.add(btnMetodosElementales, gbc);
-
-        gbc.gridx = 1;
-        btnMetodosRejilla = new JButton("Métodos de la rejilla");
-        panelRangos.add(btnMetodosRejilla, gbc);
-
-        gbc.gridx = 2;
-        btnArboles2DKD = new JButton("Arboles 2D (KD)");
-        panelRangos.add(btnArboles2DKD, gbc);
-
-        tabbedPane.addTab("Búsquedas por rangos", panelRangos);
 
         add(tabbedPane, BorderLayout.CENTER);
     }
@@ -172,15 +162,12 @@ public class MainMenuView extends JFrame {
         return btnArbolesHuffman;
     }
 
-    // Getters para Búsquedas por rangos
-    public JButton getBtnMetodosElementales() {
-        return btnMetodosElementales;
+    // Getters para Estructuras dinámicas
+    public JButton getBtnExpansionTotal() {
+        return btnExpansionTotal;
     }
-    public JButton getBtnMetodosRejilla() {
-        return btnMetodosRejilla;
-    }
-    public JButton getBtnArboles2DKD() {
-      return btnArboles2DKD;
+    public JButton getBtnExpansionParcial() {
+        return btnExpansionParcial;
     }
 
     public JTabbedPane getTabbedPane() {

@@ -1,6 +1,8 @@
 package controlador;
 
+import javax.swing.JButton;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 import modelo.*;
 import vista.*;
@@ -14,9 +16,7 @@ public class MainMenuController {
 
     private void initController() {
         // Búsquedas Internas
-
         view.getBtnBusquedaLineal().addActionListener(e -> abrirBusquedaLineal());
-
         view.getBtnBusquedaBinaria().addActionListener(e -> abrirBusquedaBinaria());
         view.getBtnHashMod().addActionListener(e -> abrirHashMod());
         view.getBtnHashCuadrado().addActionListener(e -> abrirHashCuadrado());
@@ -32,13 +32,16 @@ public class MainMenuController {
         // Árboles de Huffman
         view.getBtnArbolesHuffman().addActionListener(e -> abrirArbolesHuffman());
 
-        // Búsquedas por rangos
-        view.getBtnMetodosElementales().addActionListener(e -> abrirMetodosElementales());
-        view.getBtnMetodosRejilla().addActionListener(e -> abrirMetodosRejilla());
-        view.getBtnArboles2DKD().addActionListener(e -> abrirArboles2DKD());
 
         // Integración de la pestaña "Estructuras dinámicas"
-        abrirEstructurasDinamicas();
+        // abrirEstructurasDinamicas();
+        // Listeners para los botones de la pestaña Estructuras dinámicas
+        JPanel panelEstructurasDinamicas = (JPanel) view.getTabbedPane().getComponentAt(
+            view.getTabbedPane().indexOfTab("Estructuras dinámicas"));
+        JButton btnExpansionTotal = (JButton) panelEstructurasDinamicas.getComponent(0);
+        JButton btnExpansionParcial = (JButton) panelEstructurasDinamicas.getComponent(1);
+        btnExpansionTotal.addActionListener(e -> abrirExpansionesTotales());
+        btnExpansionParcial.addActionListener(e -> abrirExpansionParcial());
     }
 
     // Método auxiliar que solicita al usuario el tamaño de la estructura
@@ -131,5 +134,18 @@ public class MainMenuController {
         // 2) Añadir la vista como nueva pestaña
         view.getTabbedPane().addTab("Estructuras dinámicas", etView);
     }
-}
 
+    private void abrirExpansionesTotales() {
+        ExpansionesTotalesView etView = new ExpansionesTotalesView();
+        ExpansionesTotalesModel etModel = new ExpansionesTotalesModel(2);
+        new ExpansionesTotalesController(etModel, etView);
+        JOptionPane.showMessageDialog(view, etView, "Expansión Total", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    private void abrirExpansionParcial() {
+        ExpansionParcialView epView = new ExpansionParcialView();
+        ExpansionParcialModel epModel = new ExpansionParcialModel();
+        new ExpansionParcialController(epModel, epView);
+        JOptionPane.showMessageDialog(view, epView, "Expansión Parcial", JOptionPane.PLAIN_MESSAGE);
+    }
+}
