@@ -1,17 +1,22 @@
 package modelo;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class HashTruncamientoModel {
     private final String[] tabla;
     private final int tamano;
     private int[] posiciones; // 1-indexadas
+    private final ArrayList<ArrayList<String>> tablaAnidada = new ArrayList<>();
 
     public HashTruncamientoModel(int tamano) {
         if (tamano <= 0) throw new IllegalArgumentException("Tamaño >0");
         this.tamano = tamano;
         this.tabla = new String[tamano];
         Arrays.fill(this.tabla, null);
+        ArrayList<String> principal = new ArrayList<>(tamano);
+        for (int i = 0; i < tamano; i++) principal.add(null);
+        tablaAnidada.add(principal);
     }
 
     public int getTamano() {
@@ -22,7 +27,7 @@ public class HashTruncamientoModel {
         this.posiciones = posiciones;
     }
 
-    /** Calcula hash por truncamiento según posiciones, o por defecto */
+    /** Calcula hash por truncamento según posiciones, o por defecto */
     public int hashBase(String clave) {
         String s;
         if (posiciones == null || posiciones.length == 0) {
@@ -113,7 +118,45 @@ public class HashTruncamientoModel {
         return tabla;
     }
 
+    public int[] insertarEstructuraAnidada(String clave) {
+        for (ArrayList<String> columna : tablaAnidada) {
+            if (columna.contains(clave)) return new int[]{-1, -1};
+        }
+        int idx = hashBase(clave);
+        // Columna 1 (índice 0) es la principal
+        if (tablaAnidada.get(0).get(idx) == null) {
+            tablaAnidada.get(0).set(idx, clave);
+            return new int[]{0, idx};
+        }
+        // Si hay colisión, buscar la siguiente columna libre en esa fila
+        for (int col = 1; col < 100; col++) {
+            while (tablaAnidada.size() <= col) {
+                ArrayList<String> nueva = new ArrayList<>(tamano);
+                for (int i = 0; i < tamano; i++) nueva.add(null);
+                tablaAnidada.add(nueva);
+            }
+            ArrayList<String> actual = tablaAnidada.get(col);
+            if (actual.get(idx) == null) {
+                actual.set(idx, clave);
+                return new int[]{col, idx};
+            }
+        }
+        return new int[]{-1, -1};
+    }
+
+    public int[] insertarEstructuraEnlazada(String clave) {
+        return insertarEstructuraAnidada(clave);
+    }
+
+    public ArrayList<ArrayList<String>> getTablaAnidada() {
+        return tablaAnidada;
+    }
+
     public void reiniciar() {
-        Arrays.fill(tabla, null);
+        Arrays.fill(this.tabla, null);
+        tablaAnidada.clear();
+        ArrayList<String> principal = new ArrayList<>(tamano);
+        for (int i = 0; i < tamano; i++) principal.add(null);
+        tablaAnidada.add(principal);
     }
 }

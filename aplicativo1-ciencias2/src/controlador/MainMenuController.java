@@ -6,6 +6,7 @@ import javax.swing.JPanel;
 
 import modelo.*;
 import vista.*;
+
 public class MainMenuController {
     private MainMenuView view;
 
@@ -32,16 +33,9 @@ public class MainMenuController {
         // Árboles de Huffman
         view.getBtnArbolesHuffman().addActionListener(e -> abrirArbolesHuffman());
 
+        view.getBtnExpansionTotal().addActionListener(e -> abrirExpansionTotal());
+        view.getBtnExpansionParcial().addActionListener(e -> abrirExpansionParcial());
 
-        // Integración de la pestaña "Estructuras dinámicas"
-        // abrirEstructurasDinamicas();
-        // Listeners para los botones de la pestaña Estructuras dinámicas
-        JPanel panelEstructurasDinamicas = (JPanel) view.getTabbedPane().getComponentAt(
-            view.getTabbedPane().indexOfTab("Estructuras dinámicas"));
-        JButton btnExpansionTotal = (JButton) panelEstructurasDinamicas.getComponent(0);
-        JButton btnExpansionParcial = (JButton) panelEstructurasDinamicas.getComponent(1);
-        btnExpansionTotal.addActionListener(e -> abrirExpansionesTotales());
-        btnExpansionParcial.addActionListener(e -> abrirExpansionParcial());
     }
 
     // Método auxiliar que solicita al usuario el tamaño de la estructura
@@ -113,39 +107,15 @@ public class MainMenuController {
         new ArbolesHuffmanController(m, v);
     }
 
-    // --- Métodos para Búsquedas por rangos ---
-    private void abrirMetodosElementales() {
-        JOptionPane.showMessageDialog(view, "Abriendo ventana para Búsqueda por Rangos - Métodos Elementales.\n(Pendiente la implementación del algoritmo)");
-    }
-
-    private void abrirMetodosRejilla() {
-        JOptionPane.showMessageDialog(view, "Abriendo ventana para Búsqueda por Rangos - Métodos de la Rejilla.\n(Pendiente la implementación del algoritmo)");
-    }
-
-    private void abrirArboles2DKD() {
-        JOptionPane.showMessageDialog(view, "Abriendo ventana para Árboles 2D (KD).\n(Pendiente la implementación del algoritmo)");
-    }
-        private void abrirEstructurasDinamicas() {
-        // 1) Crear vista y controlador de Expansiones Totales
-        ExpansionesTotalesView etView = new ExpansionesTotalesView();
-        ExpansionesTotalesModel etModel = new ExpansionesTotalesModel(2);
-        new ExpansionesTotalesController(etModel, etView);
-
-        // 2) Añadir la vista como nueva pestaña
-        view.getTabbedPane().addTab("Estructuras dinámicas", etView);
-    }
-
-    private void abrirExpansionesTotales() {
-        ExpansionesTotalesView etView = new ExpansionesTotalesView();
-        ExpansionesTotalesModel etModel = new ExpansionesTotalesModel(2);
-        new ExpansionesTotalesController(etModel, etView);
-        JOptionPane.showMessageDialog(view, etView, "Expansión Total", JOptionPane.PLAIN_MESSAGE);
+    private void abrirExpansionTotal() {
+        ExpansionTotalModel model = new ExpansionTotalModel();
+        ExpansionTotalView viewET = new ExpansionTotalView();
+        new ExpansionTotalController(model, viewET);
+        this.view.getTabbedPane().addTab("Expansión Total", viewET);
     }
 
     private void abrirExpansionParcial() {
-        ExpansionParcialView epView = new ExpansionParcialView();
-        ExpansionParcialModel epModel = new ExpansionParcialModel();
-        new ExpansionParcialController(epModel, epView);
-        JOptionPane.showMessageDialog(view, epView, "Expansión Parcial", JOptionPane.PLAIN_MESSAGE);
+        JOptionPane.showMessageDialog(view, "Implementación de Expansión Parcial en desarrollo.");
     }
+
 }

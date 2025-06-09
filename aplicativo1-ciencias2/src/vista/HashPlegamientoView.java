@@ -14,7 +14,6 @@ public class HashPlegamientoView extends JFrame {
     private final DefaultTableModel tableModel;
     private final JTextArea terminal;
     private final RowHighlighter highlighter;
-    private final JComboBox<String> collisionMethodCombo; // Combo box for collision method
 
     public HashPlegamientoView() {
         super("Hash Plegamiento");
@@ -32,9 +31,6 @@ public class HashPlegamientoView extends JFrame {
         pTop.add(txtKeyLength);
         btnCrear = new JButton("Crear");
         pTop.add(btnCrear);
-        collisionMethodCombo = new JComboBox<>(new String[]{"Lineal", "Cuadrática", "Estructuras Anidadas", "Estructuras Enlazadas"});
-        pTop.add(new JLabel("Método de Colisión:"));
-        pTop.add(collisionMethodCombo);
 
         // Tabla
         tableModel = new DefaultTableModel(new Object[]{"Índice","Clave"},0);
@@ -95,7 +91,47 @@ public class HashPlegamientoView extends JFrame {
     public DefaultTableModel getTableModel() { return tableModel; }
     public RowHighlighter getHighlighter()   { return highlighter; }
     public JTextArea getTerminal()           { return terminal; }
-    public JComboBox<String> getCollisionMethodCombo() {
-        return collisionMethodCombo;
+
+    /**
+     * Actualiza la tabla para mostrar la estructura anidada o enlazada.
+     * @param tablaAnidada Matriz de estructuras
+     * @param soloCasillaResuelta true = solo mostrar la casilla con dato en cada columna (enlazada), false = mostrar toda la columna (anidada)
+     */
+    public void updateTableAnidada(java.util.ArrayList<java.util.ArrayList<String>> tablaAnidada, boolean soloCasillaResuelta) {
+        int filas = 0;
+        for (java.util.ArrayList<String> col : tablaAnidada) {
+            if (col != null && col.size() > filas) filas = col.size();
+        }
+        Object[] headers = new Object[1 + tablaAnidada.size()];
+        headers[0] = "Índice";
+        for (int i = 1; i <= tablaAnidada.size(); i++) headers[i] = "Columna " + i;
+        tableModel.setColumnIdentifiers(headers);
+        tableModel.setRowCount(0);
+        for (int i = 0; i < filas; i++) {
+            Object[] row = new Object[1 + tablaAnidada.size()];
+            row[0] = i;
+            for (int j = 0; j < tablaAnidada.size(); j++) {
+                java.util.ArrayList<String> col = tablaAnidada.get(j);
+                if (col != null && i < col.size()) {
+                    if (soloCasillaResuelta) {
+                        boolean hayDato = false;
+                        for (int k = 0; k < col.size(); k++) {
+                            if (col.get(k) != null) {
+                                if (k == i) {
+                                    row[j+1] = col.get(k);
+                                    hayDato = true;
+                                }
+                            }
+                        }
+                        if (!hayDato) row[j+1] = "";
+                    } else {
+                        row[j+1] = col.get(i) != null ? col.get(i) : "";
+                    }
+                } else {
+                    row[j+1] = "";
+                }
+            }
+            tableModel.addRow(row);
+        }
     }
 }

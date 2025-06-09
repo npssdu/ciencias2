@@ -65,10 +65,73 @@ public class HashCuadradoController {
                 return;
             }
             log("Intentando insertar clave: " + clave);
-            StringBuilder pasos = new StringBuilder();
-            model.insertar(clave, pasos);
-            log("Clave insertada exitosamente: " + clave + "\n" + pasos);
-            actualizarTabla();
+            for (String s : model.getTabla()) if (clave.equals(s)) {
+                log("Error: Clave duplicada: " + clave);
+                JOptionPane.showMessageDialog(view, "Clave duplicada");
+                return;
+            }
+            int idx = model.hashBase(clave);
+            if (model.getTabla()[idx] == null) {
+                model.getTabla()[idx] = clave;
+                log("Clave insertada exitosamente en la posición: " + idx);
+                actualizarTabla();
+                return;
+            }
+            String[] options = {"Lineal", "Cuadrático", "Estructuras Anidadas", "Estructuras Enlazadas"};
+            String metodo = (String) JOptionPane.showInputDialog(view,
+                "Colisión detectada en el índice " + idx + ".\nSeleccione el método de resolución de colisiones:",
+                "Resolución de Colisión",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]);
+            if (metodo == null) {
+                log("Inserción cancelada por el usuario.");
+                return;
+            }
+            int resultado = -2;
+            switch (metodo) {
+                case "Lineal":
+                    resultado = modelo.ResolucionColisiones.solucionLineal(model.getTabla(), clave, idx, model.getTamano());
+                    if (resultado != -1) log("Clave insertada exitosamente en la posición: " + resultado);
+                    actualizarTabla();
+                    break;
+                case "Cuadrático":
+                    resultado = modelo.ResolucionColisiones.solucionCuadratica(model.getTabla(), clave, idx, model.getTamano());
+                    if (resultado != -1) log("Clave insertada exitosamente en la posición: " + resultado);
+                    actualizarTabla();
+                    break;
+                case "Estructuras Anidadas": {
+                    int[] pos = model.insertarEstructuraAnidada(clave);
+                    if (pos[0] == -1) {
+                        log("Error: Clave duplicada o tabla llena (anidada).");
+                        JOptionPane.showMessageDialog(view, "Clave duplicada o tabla llena (anidada)");
+                    } else {
+                        log("Clave insertada en estructura anidada: columna " + pos[0] + ", fila " + pos[1]);
+                        JOptionPane.showMessageDialog(view, "Clave insertada en estructura anidada: columna " + pos[0] + ", fila " + pos[1]);
+                    }
+                    view.updateTableAnidada(model.getTablaAnidada(), false);
+                    return;
+                }
+                case "Estructuras Enlazadas": {
+                    int[] pos = model.insertarEstructuraEnlazada(clave);
+                    if (pos[0] == -1) {
+                        log("Error: Clave duplicada o tabla llena (enlazada).");
+                        JOptionPane.showMessageDialog(view, "Clave duplicada o tabla llena (enlazada)");
+                    } else {
+                        log("Clave insertada en estructura enlazada: columna " + pos[0] + ", fila " + pos[1]);
+                        JOptionPane.showMessageDialog(view, "Clave insertada en estructura enlazada: columna " + pos[0] + ", fila " + pos[1]);
+                    }
+                    view.updateTableAnidada(model.getTablaAnidada(), true);
+                    return;
+                }
+            }
+            if (resultado == -1) {
+                log("Error: Tabla llena. No se pudo insertar la clave: " + clave);
+                JOptionPane.showMessageDialog(view, "Tabla llena. No se pudo insertar la clave");
+            } else if (resultado != -2) {
+                actualizarTabla();
+            }
         } catch (NumberFormatException ex) {
             log("Error: Longitud de clave inválida.");
             JOptionPane.showMessageDialog(view, "Longitud de clave inválida");

@@ -27,8 +27,10 @@ public class MainMenuView extends JFrame {
 
     // Pestaña: Estructuras dinámicas
     private JPanel panelEstructurasDinamicas;
-    private JButton btnExpansionTotal;
-    private JButton btnExpansionParcial;
+    private final JButton btnExpansionTotal;
+    private final JButton btnExpansionParcial;
+    // private JButton btnExpansionTotal;
+    // private JButton btnExpansionParcial;
 
     // Pestaña 3: Árboles de Huffman
     private JPanel panelHuffman;
@@ -114,6 +116,10 @@ public class MainMenuView extends JFrame {
         panelEstructurasDinamicas.add(btnExpansionTotal);
         panelEstructurasDinamicas.add(btnExpansionParcial);
         tabbedPane.addTab("Estructuras dinámicas", panelEstructurasDinamicas);
+        // btnExpansionTotal = new JButton("Expansión Total");
+        // btnExpansionParcial = new JButton("Expansión Parcial");
+        // pMenu.add(btnExpansionTotal);
+        // pMenu.add(btnExpansionParcial);
 
         // --- Pestaña 3: Árboles de Huffman ---
         panelHuffman = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
@@ -162,15 +168,10 @@ public class MainMenuView extends JFrame {
         return btnArbolesHuffman;
     }
 
-    // Getters para Estructuras dinámicas
-    public JButton getBtnExpansionTotal() {
-        return btnExpansionTotal;
-    }
-    public JButton getBtnExpansionParcial() {
-        return btnExpansionParcial;
-    }
-
     public JTabbedPane getTabbedPane() {
         return tabbedPane;
     }
+
+    public JButton getBtnExpansionTotal() { return btnExpansionTotal; }
+    public JButton getBtnExpansionParcial() { return btnExpansionParcial; }
 }
