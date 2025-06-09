@@ -85,21 +85,23 @@ public class ArbolesHuffmanController {
 
     private void guardarCSV() {
         try {
-            Path dir = Paths.get("archivos/ArbolesHuffman");
-            Files.createDirectories(dir);
             String palabra = view.getPalabra();
             if (palabra.isEmpty()) {
                 JOptionPane.showMessageDialog(view, "No hay datos para guardar.");
                 return;
             }
-            Path file = dir.resolve("arbol_" + palabra + ".csv");
-            try (BufferedWriter writer = Files.newBufferedWriter(file)) {
-                writer.write("Palabra," + palabra + "\n");
-                writer.write("Estructura del árbol:\n");
+            JFileChooser chooser = new JFileChooser();
+            chooser.setSelectedFile(new java.io.File("arbol_" + palabra + ".csv"));
+            if (chooser.showSaveDialog(view) != JFileChooser.APPROVE_OPTION) return;
+            java.io.File file = chooser.getSelectedFile();
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                writer.write("#CONSOLA\n");
+                writer.write(view.getConsola().getText());
+                writer.write("#ARBOL\n");
                 guardarNodo(writer, model.getRoot(), 0);
             }
-            JOptionPane.showMessageDialog(view, "Datos guardados en: " + file);
-        } catch (IOException e) {
+            JOptionPane.showMessageDialog(view, "Datos guardados en: " + file.getAbsolutePath());
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(view, "Error al guardar: " + e.getMessage());
         }
     }
@@ -114,17 +116,44 @@ public class ArbolesHuffmanController {
     private void importarCSV() {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        if (chooser.showOpenDialog(view) == JFileChooser.APPROVE_OPTION) {
-            File file = chooser.getSelectedFile();
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                view.getConsola().append("Importando desde: " + file.getName() + "\n");
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    view.getConsola().append(line + "\n");
-                }
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(view, "Error al importar: " + e.getMessage());
+        if (chooser.showOpenDialog(view) != JFileChooser.APPROVE_OPTION) return;
+        java.io.File file = chooser.getSelectedFile();
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            StringBuilder consola = new StringBuilder();
+            String line;
+            boolean enConsola = false, enArbol = false;
+            java.util.List<String> arbolLines = new java.util.ArrayList<>();
+            while ((line = reader.readLine()) != null) {
+                if (line.equals("#CONSOLA")) { enConsola = true; enArbol = false; continue; }
+                if (line.equals("#ARBOL")) { enConsola = false; enArbol = true; continue; }
+                if (enConsola) consola.append(line).append("\n");
+                if (enArbol) arbolLines.add(line);
             }
+            view.getConsola().setText(consola.toString());
+            model.setRoot(recuperarArbol(arbolLines));
+            view.repaintTree();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(view, "Error al importar: " + e.getMessage());
         }
+    }
+
+    // Reconstruye el árbol desde la lista de líneas
+    private ArbolesHuffmanModel.Node recuperarArbol(java.util.List<String> lines) {
+        return recuperarArbolRec(lines, new int[]{0}, 0);
+    }
+    private ArbolesHuffmanModel.Node recuperarArbolRec(java.util.List<String> lines, int[] idx, int depth) {
+        if (idx[0] >= lines.size()) return null;
+        String line = lines.get(idx[0]);
+        int actualDepth = 0;
+        while (line.startsWith("  ")) { actualDepth++; line = line.substring(2); }
+        if (actualDepth != depth) return null;
+        idx[0]++;
+        if (line.equals("Vacío")) return null;
+        // Para nodos internos, symbol es null
+        Character symbol = line.equals("null") ? null : (line.length() == 1 ? line.charAt(0) : null);
+        ArbolesHuffmanModel.Node n = new ArbolesHuffmanModel.Node(symbol, 0);
+        n.left = recuperarArbolRec(lines, idx, depth + 1);
+        n.right = recuperarArbolRec(lines, idx, depth + 1);
+        return n;
     }
 }

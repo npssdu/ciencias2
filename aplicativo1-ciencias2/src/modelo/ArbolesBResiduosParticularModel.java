@@ -158,6 +158,12 @@ public class ArbolesBResiduosParticularModel {
         System.out.println(arbol.insertarConPasos('C'));
     }
 
+    public void setRoot(Node root) {
+        if (root == null) return;
+        this.root.data = root.data;
+        this.root.left = root.left;
+        this.root.right = root.right;
+    }
 }
 
 

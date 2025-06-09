@@ -120,6 +120,10 @@ public class ArbolesHuffmanModel {
         return root;
     }
 
+    public void setRoot(Node root) {
+        this.root = root;
+    }
+
     public Map<Character, String> getCodes() {
         return codes;
     }

@@ -103,21 +103,23 @@ public class ArbolesBResiduosMultiplesController {
 
     private void guardarCSV() {
         try {
-            Path dir = Paths.get("archivos/ArbolesBResiduosMultiples");
-            Files.createDirectories(dir);
             String palabra = view.getPalabra();
             if (palabra.isEmpty()) {
                 JOptionPane.showMessageDialog(view, "No hay datos para guardar.");
                 return;
             }
-            Path file = dir.resolve("arbol_" + palabra + ".csv");
-            try (BufferedWriter writer = Files.newBufferedWriter(file)) {
-                writer.write("Palabra," + palabra + "\n");
-                writer.write("Estructura del árbol:\n");
+            JFileChooser chooser = new JFileChooser();
+            chooser.setSelectedFile(new java.io.File("arbol_" + palabra + ".csv"));
+            if (chooser.showSaveDialog(view) != JFileChooser.APPROVE_OPTION) return;
+            java.io.File file = chooser.getSelectedFile();
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                writer.write("#CONSOLA\n");
+                writer.write(view.getConsola().getText());
+                writer.write("#ARBOL\n");
                 guardarNodo(writer, model.getRoot(), 0);
             }
-            JOptionPane.showMessageDialog(view, "Datos guardados en: " + file);
-        } catch (IOException e) {
+            JOptionPane.showMessageDialog(view, "Datos guardados en: " + file.getAbsolutePath());
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(view, "Error al guardar: " + e.getMessage());
         }
     }
@@ -133,17 +135,46 @@ public class ArbolesBResiduosMultiplesController {
     private void importarCSV() {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        if (chooser.showOpenDialog(view) == JFileChooser.APPROVE_OPTION) {
-            File file = chooser.getSelectedFile();
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                view.getConsola().append("Importando desde: " + file.getName() + "\n");
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    view.getConsola().append(line + "\n");
-                }
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(view, "Error al importar: " + e.getMessage());
+        if (chooser.showOpenDialog(view) != JFileChooser.APPROVE_OPTION) return;
+        java.io.File file = chooser.getSelectedFile();
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            StringBuilder consola = new StringBuilder();
+            String line;
+            boolean enConsola = false, enArbol = false;
+            java.util.List<String> arbolLines = new java.util.ArrayList<>();
+            while ((line = reader.readLine()) != null) {
+                if (line.equals("#CONSOLA")) { enConsola = true; enArbol = false; continue; }
+                if (line.equals("#ARBOL")) { enConsola = false; enArbol = true; continue; }
+                if (enConsola) consola.append(line).append("\n");
+                if (enArbol) arbolLines.add(line);
             }
+            view.getConsola().setText(consola.toString());
+            model.setRoot(recuperarArbol(arbolLines));
+            view.repaintTree();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(view, "Error al importar: " + e.getMessage());
         }
+    }
+
+    // Reconstruye el árbol desde la lista de líneas
+    private ArbolesBResiduosMultiplesModel.Node recuperarArbol(java.util.List<String> lines) {
+        return recuperarArbolRec(lines, new int[]{0}, 0);
+    }
+    private ArbolesBResiduosMultiplesModel.Node recuperarArbolRec(java.util.List<String> lines, int[] idx, int depth) {
+        if (idx[0] >= lines.size()) return null;
+        String line = lines.get(idx[0]);
+        int actualDepth = 0;
+        while (line.startsWith("  ")) { actualDepth++; line = line.substring(2); }
+        if (actualDepth != depth) return null;
+        idx[0]++;
+        if (line.equals("Vacío")) return null;
+        ArbolesBResiduosMultiplesModel.Node n = model.new Node();
+        n.data = line.equals("null") ? null : line.charAt(0);
+        // reconstruir hijos recursivamente
+        n.children = new java.util.ArrayList<>();
+        for (int i = 0; i < model.getNumChildren(); i++) {
+            n.children.add(recuperarArbolRec(lines, idx, depth + 1));
+        }
+        return n;
     }
 }

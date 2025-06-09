@@ -80,6 +80,10 @@ public class ArbolesBDigitalesModel {
         return root;
     }
 
+    public void setRoot(Node root) {
+        this.root = root;
+    }
+
     public Node buscar(char letra) {
         return buscarRec(root, letra);
     }

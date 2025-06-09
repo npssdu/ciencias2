@@ -146,4 +146,10 @@ public class ArbolesBResiduosMultiplesModel {
         for (Node n : list) if (n != null) return false;
         return true;
     }
+
+    public void setRoot(Node root) {
+        if (root == null) return;
+        this.root.data = root.data;
+        this.root.children = root.children;
+    }
 }

@@ -5,6 +5,8 @@ import modelo.ArbolesBDigitalesModel.Node;
 import vista.ArbolesBDigitalesView;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ArbolesBDigitalesController {
     private final ArbolesBDigitalesModel model;
@@ -22,7 +24,8 @@ public class ArbolesBDigitalesController {
         view.getBtnCrear().addActionListener(e -> crearArbol());
         view.getBtnBuscarLetra().addActionListener(e -> buscarLetra());
         view.getBtnEliminarLetra().addActionListener(e -> eliminarLetra());
-        // guardar/importar quedan igual...
+        view.getBtnGuardar().addActionListener(e -> guardarCSV());
+        view.getBtnImportar().addActionListener(e -> importarCSV());
     }
 
     private void crearArbol() {
@@ -65,5 +68,84 @@ public class ArbolesBDigitalesController {
             ok ? "Eliminado y nivelado '" + c + "'\n"
                : "No existe '" + c + "'\n");
         view.getTreePanel().repaint();
+    }
+
+    private void guardarCSV() {
+        try {
+            String palabra = view.getTxtPalabra();
+            if (palabra.isEmpty()) {
+                JOptionPane.showMessageDialog(view, "No hay datos para guardar.");
+                return;
+            }
+            JFileChooser chooser = new JFileChooser();
+            chooser.setSelectedFile(new java.io.File("arbol_" + palabra + ".csv"));
+            if (chooser.showSaveDialog(view) != JFileChooser.APPROVE_OPTION) return;
+            java.io.File file = chooser.getSelectedFile();
+            try (java.io.BufferedWriter writer = new java.io.BufferedWriter(new java.io.FileWriter(file))) {
+                writer.write("#CONSOLA\n");
+                writer.write(view.getConsola().getText());
+                writer.write("#ARBOL\n");
+                guardarNodo(writer, model.getRoot(), 0);
+            }
+            JOptionPane.showMessageDialog(view, "Datos guardados en: " + file.getName());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(view, "Error al guardar: " + e.getMessage());
+        }
+    }
+
+    private void guardarNodo(java.io.BufferedWriter writer, Node node, int depth) throws java.io.IOException {
+        if (node == null) {
+            writer.write("  ".repeat(depth) + "Vacío\n");
+            return;
+        }
+        writer.write("  ".repeat(depth) + (node.data == null ? "Vacío" : node.data) + "\n");
+        guardarNodo(writer, node.left, depth + 1);
+        guardarNodo(writer, node.right, depth + 1);
+    }
+
+    private void importarCSV() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        if (chooser.showOpenDialog(view) != JFileChooser.APPROVE_OPTION) return;
+        java.io.File file = chooser.getSelectedFile();
+        try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(file))) {
+            StringBuilder consola = new StringBuilder();
+            String line;
+            boolean enConsola = false, enArbol = false;
+            List<String> arbolLines = new ArrayList<>();
+            while ((line = reader.readLine()) != null) {
+                if (line.equals("#CONSOLA")) {
+                    enConsola = true; enArbol = false; continue;
+                }
+                if (line.equals("#ARBOL")) {
+                    enConsola = false; enArbol = true; continue;
+                }
+                if (enConsola) consola.append(line).append("\n");
+                if (enArbol) arbolLines.add(line);
+            }
+            view.getConsola().setText(consola.toString());
+            model.setRoot(recuperarArbol(arbolLines));
+            view.getTreePanel().repaint();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(view, "Error al importar: " + e.getMessage());
+        }
+    }
+
+    // Reconstruye el árbol desde la lista de líneas
+    private Node recuperarArbol(List<String> lines) {
+        return recuperarArbolRec(lines, new int[]{0}, 0);
+    }
+    private Node recuperarArbolRec(List<String> lines, int[] idx, int depth) {
+        if (idx[0] >= lines.size()) return null;
+        String line = lines.get(idx[0]);
+        int actualDepth = 0;
+        while (line.startsWith("  ")) { actualDepth++; line = line.substring(2); }
+        if (actualDepth != depth) return null;
+        idx[0]++;
+        if (line.equals("Vacío")) return null;
+        Node n = model.new Node(line.charAt(0));
+        n.left = recuperarArbolRec(lines, idx, depth + 1);
+        n.right = recuperarArbolRec(lines, idx, depth + 1);
+        return n;
     }
 }
