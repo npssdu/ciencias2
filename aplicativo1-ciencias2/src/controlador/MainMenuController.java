@@ -36,6 +36,14 @@ public class MainMenuController {
         view.getBtnExpansionTotal().addActionListener(e -> abrirExpansionTotal());
         view.getBtnExpansionParcial().addActionListener(e -> abrirExpansionParcial());
 
+
+        // Búsquedas Externas (por bloques)
+        view.getBtnBusquedaLinealExterna().addActionListener(e -> abrirBusquedaLinealExterna());
+        view.getBtnBusquedaBinariaExterna().addActionListener(e -> abrirBusquedaBinariaExterna());
+        view.getBtnHashModExterna().addActionListener(e -> abrirHashModExterna());
+        view.getBtnHashCuadradoExterna().addActionListener(e -> abrirHashCuadradoExterna());
+        view.getBtnHashPlegamientoExterna().addActionListener(e -> abrirHashPlegamientoExterna());
+        view.getBtnHashTruncamientoExterna().addActionListener(e -> abrirHashTruncamientoExterna());
     }
 
     // Método auxiliar que solicita al usuario el tamaño de la estructura
@@ -116,6 +124,38 @@ public class MainMenuController {
 
     private void abrirExpansionParcial() {
         JOptionPane.showMessageDialog(view, "Implementación de Expansión Parcial en desarrollo.");
+    }
+
+    // --- Métodos para Búsquedas Externas (por bloques) ---
+    private void abrirBusquedaLinealExterna() {
+        BusquedaLinealView v = new BusquedaLinealView();
+        v.setTitle("Búsqueda Lineal Externa (por Bloques)");
+        new BusquedaLinealController(null, v, true); // true = modo bloques
+    }
+    private void abrirBusquedaBinariaExterna() {
+        BusquedaBinariaView v = new BusquedaBinariaView();
+        v.setTitle("Búsqueda Binaria Externa (por Bloques)");
+        new BusquedaBinariaController(null, v, true);
+    }
+    private void abrirHashModExterna() {
+        HashModView v = new HashModView();
+        v.setTitle("Hash Mod Externo (por Bloques)");
+        new HashModController(null, v, true);
+    }
+    private void abrirHashCuadradoExterna() {
+        HashCuadradoView v = new HashCuadradoView();
+        v.setTitle("Hash Cuadrado Externo (por Bloques)");
+        new HashCuadradoController(null, v, true);
+    }
+    private void abrirHashPlegamientoExterna() {
+        HashPlegamientoView v = new HashPlegamientoView();
+        v.setTitle("Hash Plegamiento Externo (por Bloques)");
+        new HashPlegamientoController(null, v, true);
+    }
+    private void abrirHashTruncamientoExterna() {
+        HashTruncamientoView v = new HashTruncamientoView();
+        v.setTitle("Hash Truncamiento Externo (por Bloques)");
+        new HashTruncamientoController(null, v, true);
     }
 
 }

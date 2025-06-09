@@ -14,10 +14,15 @@ public class BusquedaBinariaController {
     private BusquedaBinariaModel model;
     private final BusquedaBinariaView view;
     private final Path baseDir = Paths.get("archivos/BusquedaBinaria");
+    private final boolean modoBloques;
 
     public BusquedaBinariaController(BusquedaBinariaModel m, BusquedaBinariaView v) {
+        this(m, v, false);
+    }
+    public BusquedaBinariaController(BusquedaBinariaModel m, BusquedaBinariaView v, boolean modoBloques) {
         this.model = m;
         this.view = v;
+        this.modoBloques = modoBloques;
         init();
         view.setVisible(true);
     }
@@ -60,14 +65,48 @@ public class BusquedaBinariaController {
         }
         try {
             int claveInt = Integer.parseInt(clave); // Convertir clave a int
-            log("Intentando insertar clave: " + claveInt);
-            if (model.insertar(claveInt)) {
-                log("Clave insertada exitosamente: " + claveInt);
-                actualizarTabla();
+            if (!modoBloques) {
+                log("Intentando insertar clave: " + claveInt);
+                if (model.insertar(claveInt)) {
+                    log("Clave insertada exitosamente: " + claveInt);
+                } else {
+                    log("Error: No se pudo insertar la clave. Verifique duplicados o tamaño máximo.");
+                    JOptionPane.showMessageDialog(view, "No se pudo insertar la clave. Verifique duplicados o tamaño máximo.");
+                }
             } else {
-                log("Error: No se pudo insertar la clave. Verifique duplicados o tamaño máximo.");
-                JOptionPane.showMessageDialog(view, "No se pudo insertar la clave. Verifique duplicados o tamaño máximo.");
+                // --- BLOQUES ---
+                int tam = model.getTamano();
+                int blockSize = (int)Math.floor(Math.sqrt(tam));
+                if (blockSize < 1) blockSize = 1;
+                List<Integer> datos = model.getDatos();
+                int numBlocks = (int)Math.ceil((double)tam / blockSize);
+                boolean inserted = false;
+                for (int b = 0; b < numBlocks; b++) {
+                    int start = b * blockSize;
+                    int end = Math.min(start + blockSize, tam);
+                    int countInBlock = 0;
+                    for (int i = start; i < end && i < datos.size(); i++) countInBlock++;
+                    if (countInBlock < (end - start)) {
+                        // Hay espacio en este bloque
+                        datos.add(start + countInBlock, claveInt);
+                        log("[Bloques] Insertado en bloque " + (b+1) + " (índices " + start + "-" + (end-1) + ")");
+                        inserted = true;
+                        break;
+                    }
+                }
+                if (!inserted) {
+                    log("[Bloques] No hay espacio en ningún bloque para insertar la clave.");
+                    JOptionPane.showMessageDialog(view, "No hay espacio en ningún bloque para insertar la clave");
+                } else {
+                    // Mantener orden dentro de cada bloque
+                    for (int b = 0; b < numBlocks; b++) {
+                        int start = b * blockSize;
+                        int end = Math.min(start + blockSize, datos.size());
+                        datos.subList(start, end).sort(Integer::compareTo);
+                    }
+                }
             }
+            actualizarTabla();
         } catch (NumberFormatException ex) {
             log("Error: Clave debe ser un número entero válido.");
             JOptionPane.showMessageDialog(view, "Clave debe ser un número entero válido.");
@@ -78,12 +117,41 @@ public class BusquedaBinariaController {
         if (model == null) { JOptionPane.showMessageDialog(view,"Defina tamaño"); return; }
         try {
             int c = Integer.parseInt(view.getTxtClave());
-            if (model.eliminar(c)) {
-                actualizarTabla();
-                view.getHighlighter().highlightAll(Color.PINK);
-                log("Eliminado " + c);
+            if (!modoBloques) {
+                if (model.eliminar(c)) {
+                    actualizarTabla();
+                    view.getHighlighter().highlightAll(Color.PINK);
+                    log("Eliminado " + c);
+                } else {
+                    JOptionPane.showMessageDialog(view,"No existe");
+                }
             } else {
-                JOptionPane.showMessageDialog(view,"No existe");
+                // --- BLOQUES ---
+                List<Integer> datos = model.getDatos();
+                int tam = model.getTamano();
+                int blockSize = (int)Math.floor(Math.sqrt(tam));
+                if (blockSize < 1) blockSize = 1;
+                int numBlocks = (int)Math.ceil((double)tam / blockSize);
+                boolean eliminado = false;
+                for (int b = 0; b < numBlocks; b++) {
+                    int start = b * blockSize;
+                    int end = Math.min(start + blockSize, tam);
+                    for (int i = start; i < end && i < datos.size(); i++) {
+                        if (datos.get(i).equals(c)) {
+                            datos.remove(i);
+                            log("[Bloques] Eliminado de bloque " + (b+1) + " (índice " + i + ")");
+                            eliminado = true;
+                            break;
+                        }
+                    }
+                    if (eliminado) break;
+                }
+                if (eliminado) {
+                    actualizarTabla();
+                    view.getHighlighter().highlightAll(Color.PINK);
+                } else {
+                    JOptionPane.showMessageDialog(view,"No existe en ningún bloque");
+                }
             }
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(view,"Clave debe ser numérica");
@@ -94,12 +162,47 @@ public class BusquedaBinariaController {
         if (model == null) { JOptionPane.showMessageDialog(view,"Defina tamaño"); return; }
         try {
             int c = Integer.parseInt(view.getTxtClave());
-            int idx = model.buscar(c);
-            if (idx >= 0) {
-                view.getHighlighter().highlight(idx, Color.GREEN.brighter());
-                log("Encontrado " + c + " en índice " + (idx+1));
+            if (!modoBloques) {
+                int idx = model.buscar(c);
+                if (idx >= 0) {
+                    view.getHighlighter().highlight(idx, Color.GREEN.brighter());
+                    log("Encontrado " + c + " en índice " + (idx+1));
+                } else {
+                    JOptionPane.showMessageDialog(view,"No encontrado");
+                }
             } else {
-                JOptionPane.showMessageDialog(view,"No encontrado");
+                // --- BLOQUES ---
+                List<Integer> datos = model.getDatos();
+                int tam = model.getTamano();
+                int blockSize = (int)Math.floor(Math.sqrt(tam));
+                if (blockSize < 1) blockSize = 1;
+                int numBlocks = (int)Math.ceil((double)tam / blockSize);
+                boolean found = false;
+                for (int b = 0; b < numBlocks; b++) {
+                    int start = b * blockSize;
+                    int end = Math.min(start + blockSize, tam);
+                    // Búsqueda binaria dentro del bloque
+                    int left = start;
+                    int right = Math.min(end, datos.size()) - 1;
+                    while (left <= right) {
+                        int mid = left + (right - left) / 2;
+                        int val = datos.get(mid);
+                        if (val == c) {
+                            view.getHighlighter().highlight(mid, Color.GREEN.brighter());
+                            log("[Bloques] Encontrado en bloque " + (b+1) + " (índice " + mid + ")");
+                            found = true;
+                            break;
+                        } else if (val < c) {
+                            left = mid + 1;
+                        } else {
+                            right = mid - 1;
+                        }
+                    }
+                    if (found) break;
+                }
+                if (!found) {
+                    JOptionPane.showMessageDialog(view,"No encontrado en ningún bloque");
+                }
             }
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(view,"Clave debe ser numérica");
@@ -145,8 +248,24 @@ public class BusquedaBinariaController {
         DefaultTableModel tm = view.getTableModel();
         tm.setRowCount(0);
         List<Integer> d = model.getDatos();
-        for (int i=0;i<d.size();i++) {
-            tm.addRow(new Object[]{i+1, d.get(i)});
+        if (!modoBloques) {
+            for (int i=0;i<d.size();i++) {
+                tm.addRow(new Object[]{i+1, d.get(i)});
+            }
+        } else {
+            int tam = model.getTamano();
+            int blockSize = (int)Math.floor(Math.sqrt(tam));
+            if (blockSize < 1) blockSize = 1;
+            int numBlocks = (int)Math.ceil((double)tam / blockSize);
+            int idx = 0;
+            for (int b = 0; b < numBlocks; b++) {
+                tm.addRow(new Object[]{"--- Bloque " + (b+1) + " ---", ""});
+                int start = b * blockSize;
+                int end = Math.min(start + blockSize, tam);
+                for (int i = start; i < end && idx < d.size(); i++, idx++) {
+                    tm.addRow(new Object[]{idx+1, d.get(idx)});
+                }
+            }
         }
     }
 }

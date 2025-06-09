@@ -14,10 +14,15 @@ public class BusquedaLinealController {
     private BusquedaLinealModel model;
     private final BusquedaLinealView view;
     private final Path baseDir = Paths.get("archivos/BusquedaLineal");
+    private final boolean modoBloques;
 
     public BusquedaLinealController(BusquedaLinealModel m, BusquedaLinealView v) {
+        this(m, v, false);
+    }
+    public BusquedaLinealController(BusquedaLinealModel m, BusquedaLinealView v, boolean modoBloques) {
         this.model = m;
         this.view = v;
+        this.modoBloques = modoBloques;
         init();
         view.setVisible(true);
     }
@@ -67,9 +72,36 @@ public class BusquedaLinealController {
                 JOptionPane.showMessageDialog(view, "La clave debe tener exactamente " + keyLength + " caracteres.");
                 return;
             }
-            log("Intentando insertar clave: " + clave);
-            model.insertar(clave);
-            log("Clave insertada exitosamente: " + clave);
+            if (!modoBloques) {
+                log("Intentando insertar clave: " + clave);
+                model.insertar(clave);
+                log("Clave insertada exitosamente: " + clave);
+            } else {
+                // --- BLOQUES ---
+                int tam = model.getTamano();
+                int blockSize = (int)Math.floor(Math.sqrt(tam));
+                if (blockSize < 1) blockSize = 1;
+                List<String> datos = model.getDatos();
+                int numBlocks = (int)Math.ceil((double)tam / blockSize);
+                boolean inserted = false;
+                for (int b = 0; b < numBlocks; b++) {
+                    int start = b * blockSize;
+                    int end = Math.min(start + blockSize, tam);
+                    int countInBlock = 0;
+                    for (int i = start; i < end && i < datos.size(); i++) countInBlock++;
+                    if (countInBlock < (end - start)) {
+                        // Hay espacio en este bloque
+                        datos.add(start + countInBlock, clave);
+                        log("[Bloques] Insertado en bloque " + (b+1) + " (índices " + start + "-" + (end-1) + ")");
+                        inserted = true;
+                        break;
+                    }
+                }
+                if (!inserted) {
+                    log("[Bloques] No hay espacio en ningún bloque para insertar la clave.");
+                    JOptionPane.showMessageDialog(view, "No hay espacio en ningún bloque para insertar la clave");
+                }
+            }
             actualizarTabla();
         } catch (NumberFormatException ex) {
             log("Error: Longitud de clave inválida.");
@@ -80,24 +112,79 @@ public class BusquedaLinealController {
     private void eliminar() {
         String c = view.getTxtClave();
         if (model == null) { JOptionPane.showMessageDialog(view,"Defina tamaño"); return; }
-        if (model.eliminar(c)) {
-            actualizarTabla();
-            view.getHighlighter().highlightAll(Color.PINK);
-            log("Eliminado '" + c + "'");
+        if (!modoBloques) {
+            if (model.eliminar(c)) {
+                actualizarTabla();
+                view.getHighlighter().highlightAll(Color.PINK);
+                log("Eliminado '" + c + "'");
+            } else {
+                JOptionPane.showMessageDialog(view,"Clave no existe");
+            }
         } else {
-            JOptionPane.showMessageDialog(view,"Clave no existe");
+            // --- BLOQUES ---
+            List<String> datos = model.getDatos();
+            int tam = model.getTamano();
+            int blockSize = (int)Math.floor(Math.sqrt(tam));
+            if (blockSize < 1) blockSize = 1;
+            int numBlocks = (int)Math.ceil((double)tam / blockSize);
+            boolean eliminado = false;
+            for (int b = 0; b < numBlocks; b++) {
+                int start = b * blockSize;
+                int end = Math.min(start + blockSize, tam);
+                for (int i = start; i < end && i < datos.size(); i++) {
+                    if (datos.get(i).equals(c)) {
+                        datos.remove(i);
+                        log("[Bloques] Eliminado de bloque " + (b+1) + " (índice " + i + ")");
+                        eliminado = true;
+                        break;
+                    }
+                }
+                if (eliminado) break;
+            }
+            if (eliminado) {
+                actualizarTabla();
+                view.getHighlighter().highlightAll(Color.PINK);
+            } else {
+                JOptionPane.showMessageDialog(view,"Clave no existe en ningún bloque");
+            }
         }
     }
 
     private void buscar() {
         String c = view.getTxtClave();
         if (model == null) { JOptionPane.showMessageDialog(view,"Defina tamaño"); return; }
-        int idx = model.buscar(c);
-        if (idx>=0) {
-            view.getHighlighter().highlight(idx, Color.GREEN.brighter());
-            log("Encontrado '" + c + "' en índice " + (idx+1));
+        if (!modoBloques) {
+            int idx = model.buscar(c);
+            if (idx>=0) {
+                view.getHighlighter().highlight(idx, Color.GREEN.brighter());
+                log("Encontrado '" + c + "' en índice " + (idx+1));
+            } else {
+                JOptionPane.showMessageDialog(view,"No encontrado");
+            }
         } else {
-            JOptionPane.showMessageDialog(view,"No encontrado");
+            // --- BLOQUES ---
+            List<String> datos = model.getDatos();
+            int tam = model.getTamano();
+            int blockSize = (int)Math.floor(Math.sqrt(tam));
+            if (blockSize < 1) blockSize = 1;
+            int numBlocks = (int)Math.ceil((double)tam / blockSize);
+            boolean found = false;
+            for (int b = 0; b < numBlocks; b++) {
+                int start = b * blockSize;
+                int end = Math.min(start + blockSize, tam);
+                for (int i = start; i < end && i < datos.size(); i++) {
+                    if (datos.get(i).equals(c)) {
+                        view.getHighlighter().highlight(i, Color.GREEN.brighter());
+                        log("[Bloques] Encontrado en bloque " + (b+1) + " (índice " + i + ")");
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) break;
+            }
+            if (!found) {
+                JOptionPane.showMessageDialog(view,"No encontrado en ningún bloque");
+            }
         }
     }
 
@@ -148,7 +235,23 @@ public class BusquedaLinealController {
         DefaultTableModel tm = view.getTableModel();
         tm.setRowCount(0);
         List<String> d = model.getDatos();
-        for (int i=0;i<d.size();i++)
-            tm.addRow(new Object[]{i+1, d.get(i)});
+        if (!modoBloques) {
+            for (int i=0;i<d.size();i++)
+                tm.addRow(new Object[]{i+1, d.get(i)});
+        } else {
+            int tam = model.getTamano();
+            int blockSize = (int)Math.floor(Math.sqrt(tam));
+            if (blockSize < 1) blockSize = 1;
+            int numBlocks = (int)Math.ceil((double)tam / blockSize);
+            int idx = 0;
+            for (int b = 0; b < numBlocks; b++) {
+                tm.addRow(new Object[]{"--- Bloque " + (b+1) + " ---", ""});
+                int start = b * blockSize;
+                int end = Math.min(start + blockSize, tam);
+                for (int i = start; i < end && idx < d.size(); i++, idx++) {
+                    tm.addRow(new Object[]{idx+1, d.get(idx)});
+                }
+            }
+        }
     }
 }
