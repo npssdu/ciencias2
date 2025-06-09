@@ -23,28 +23,30 @@ public class ArbolesHuffmanModel {
     /** Construye el árbol de Huffman a partir de la palabra dada */
     public List<String> buildTree(String palabra) {
         int n = palabra.length();
-        // 1) calcular frecuencias
-        Map<Character, Integer> freqMap = new HashMap<>();
+        // 1) calcular frecuencias y orden de aparición
+        Map<Character, Integer> freqMap = new LinkedHashMap<>();
+        List<Character> orden = new ArrayList<>();
         for (char c : palabra.toCharArray()) {
+            if (!freqMap.containsKey(c)) orden.add(c);
             freqMap.put(c, freqMap.getOrDefault(c, 0) + 1);
         }
         // 2) convertir a lista de nodos hoja
         List<Node> nodes = new ArrayList<>();
-        for (var e : freqMap.entrySet()) {
-            nodes.add(new Node(e.getKey(), e.getValue()));
+        for (char c : orden) {
+            nodes.add(new Node(c, freqMap.get(c)));
         }
-        // 3) ordenar inicial
-        nodes.sort(Comparator.comparingDouble(n1 -> n1.freq));
+        // 3) ordenar inicial según orden de aparición
+        // (ya está en orden por 'orden')
         // 4) calculamos tabla de probabilidades Pi = freq / n
         probabilities.clear();
-        for (var e : freqMap.entrySet()) {
-            probabilities.put(e.getKey(), e.getValue() / (double)n);
+        for (char c : orden) {
+            probabilities.put(c, freqMap.get(c) / (double)n);
         }
 
         // Para el paso a paso:
         List<String> pasos = new ArrayList<>();
         pasos.add("Tabla inicial de frecuencias y probabilidades:");
-        pasos.add(formatTable(nodes, n));
+        pasos.add(formatTable(nodes, n, orden));
 
         // 5) bucle de fusiones
         while (nodes.size() > 1) {
@@ -53,13 +55,15 @@ public class ArbolesHuffmanModel {
             Node parent = new Node(null, a.freq + b.freq);
             parent.left = a;
             parent.right = b;
-            // insertar en orden
+            // Para mostrar agrupación de caracteres
+            parent.code = getSymbols(a) + getSymbols(b);
+            // insertar en orden por frecuencia ascendente
             nodes.add(parent);
             nodes.sort(Comparator.comparingDouble(n1 -> n1.freq));
             pasos.add("Se fusionan " +
-                    (a.symbol==null? "⊕": a.symbol) + "(" + a.freq + ") + " +
-                    (b.symbol==null? "⊕": b.symbol) + "(" + b.freq + ") = " + parent.freq);
-            pasos.add(formatTable(nodes, n));
+                    getSymbols(a) + "(" + a.freq + ") + " +
+                    getSymbols(b) + "(" + b.freq + ") = " + parent.freq);
+            pasos.add(formatTable(nodes, n, orden));
         }
 
         root = nodes.get(0);
@@ -67,6 +71,39 @@ public class ArbolesHuffmanModel {
         buildCodes(root, "");
 
         return pasos;
+    }
+
+    // Devuelve los símbolos agrupados de un nodo
+    private String getSymbols(Node n) {
+        if (n == null) return "";
+        if (n.symbol != null) return n.symbol.toString();
+        return getSymbols(n.left) + getSymbols(n.right);
+    }
+
+    /** Formatea la tabla (Ki, fi, Pi) para mostrar en paso a paso, respetando el orden de aparición */
+    private String formatTable(List<Node> list, int total, List<Character> orden) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%-10s %-5s %-5s\n", "Ki","fi","Pi"));
+        // Ordenar: primero hojas según 'orden', luego agrupaciones por frecuencia ascendente
+        List<Node> hojas = new ArrayList<>();
+        List<Node> grupos = new ArrayList<>();
+        for (Node n : list) {
+            if (n.symbol != null) hojas.add(n);
+            else grupos.add(n);
+        }
+        hojas.sort(Comparator.comparingInt(n -> orden.indexOf(n.symbol)));
+        grupos.sort(Comparator.comparingDouble(n -> n.freq));
+        for (Node n : hojas) {
+            String ki = n.symbol.toString();
+            double pi = n.freq/(double)total;
+            sb.append(String.format("%-10s %-5d %-5.3f\n", ki, (int)n.freq, pi));
+        }
+        for (Node n : grupos) {
+            String ki = getSymbols(n);
+            double pi = n.freq/(double)total;
+            sb.append(String.format("%-10s %-5d %-5.3f\n", ki, (int)n.freq, pi));
+        }
+        return sb.toString();
     }
 
     private void buildCodes(Node node, String prefix) {
@@ -77,18 +114,6 @@ public class ArbolesHuffmanModel {
         }
         buildCodes(node.left, prefix + "0");
         buildCodes(node.right, prefix + "1");
-    }
-
-    /** Formatea la tabla (Ki, fi, Pi) para mostrar en paso a paso */
-    private String formatTable(List<Node> list, int total) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%-5s %-5s %-5s\n", "Ki","fi","Pi"));
-        for (Node n : list) {
-            String ki = n.symbol==null? "⊕": n.symbol.toString();
-            double pi = n.freq/total;
-            sb.append(String.format("%-5s %-5d %-5.3f\n", ki, (int)n.freq, pi));
-        }
-        return sb.toString();
     }
 
     public Node getRoot() {

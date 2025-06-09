@@ -114,6 +114,42 @@ public class ArbolesBResiduosParticularModel {
         }
     }
 
+    /**
+     * Elimina la letra y nivela el árbol (elimina nodos vacíos).
+     */
+    public boolean eliminar(char letra) {
+        boolean[] eliminado = new boolean[1];
+        eliminarRec(root, letra, eliminado);
+        return eliminado[0];
+    }
+
+    // Elimina el nodo con la letra y nivela el árbol
+    private Node eliminarRec(Node n, char letra, boolean[] eliminado) {
+        if (n == null) return null;
+        if (n.data != null && n.data == letra) {
+            eliminado[0] = true;
+            // Si es hoja, eliminar el nodo
+            if (n.left == null && n.right == null) return null;
+            // Si solo tiene un hijo, reemplazar por ese hijo
+            if (n.left == null) return n.right;
+            if (n.right == null) return n.left;
+            // Si tiene dos hijos, buscar el menor de la derecha
+            Node min = getMin(n.right);
+            n.data = min.data;
+            n.right = eliminarRec(n.right, min.data, new boolean[1]);
+            return n;
+        }
+        n.left = eliminarRec(n.left, letra, eliminado);
+        n.right = eliminarRec(n.right, letra, eliminado);
+        return n;
+    }
+
+    // Busca el nodo más a la izquierda
+    private Node getMin(Node n) {
+        while (n.left != null) n = n.left;
+        return n;
+    }
+
     // Para pruebas manuales
     public static void main(String[] args) {
         ArbolesBResiduosParticularModel arbol = new ArbolesBResiduosParticularModel();

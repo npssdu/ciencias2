@@ -109,4 +109,41 @@ public class ArbolesBResiduosMultiplesModel {
         curr.data = letra;
         return pasos.toString();
     }
+
+    /**
+     * Elimina la letra y nivela el árbol (elimina nodos vacíos).
+     */
+    public boolean eliminar(char letra) {
+        boolean[] eliminado = new boolean[1];
+        eliminarRec(root, letra, eliminado);
+        return eliminado[0];
+    }
+
+    // Elimina el nodo con la letra y nivela el árbol
+    private Node eliminarRec(Node n, char letra, boolean[] eliminado) {
+        if (n == null) return null;
+        if (n.data != null && n.data == letra) {
+            eliminado[0] = true;
+            // Si no tiene hijos, eliminar el nodo
+            if (n.children == null || n.children.isEmpty() || allNull(n.children)) return null;
+            // Si solo tiene hijos vacíos, eliminar el nodo
+            if (allNull(n.children)) return null;
+            // Si tiene hijos, borrar el dato pero mantener hijos
+            n.data = null;
+        }
+        if (n.children != null) {
+            for (int i = 0; i < n.children.size(); i++) {
+                n.children.set(i, eliminarRec(n.children.get(i), letra, eliminado));
+            }
+            // Si después de eliminar todos los hijos son null y no tiene data, eliminar este nodo
+            if (n.data == null && allNull(n.children)) return null;
+        }
+        return n;
+    }
+
+    // Verifica si todos los hijos son null
+    private boolean allNull(List<Node> list) {
+        for (Node n : list) if (n != null) return false;
+        return true;
+    }
 }

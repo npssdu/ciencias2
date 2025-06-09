@@ -94,24 +94,11 @@ public class ArbolesBResiduosMultiplesController {
         String input = JOptionPane.showInputDialog(view, "Ingrese la letra a eliminar:");
         if (input == null || input.isEmpty()) return;
         char letra = input.charAt(0);
-        if (eliminarNodo(model.getRoot(), letra)) {
-            view.getConsola().append("Eliminado: '" + letra + "'\n");
-        } else {
-            view.getConsola().append("No encontrado: '" + letra + "'\n");
-        }
+        boolean ok = model.eliminar(letra);
+        view.getConsola().append(
+            ok ? "Eliminado y nivelado: '" + letra + "'\n"
+               : "No encontrado: '" + letra + "'\n");
         view.repaintTree();
-    }
-
-    private boolean eliminarNodo(ArbolesBResiduosMultiplesModel.Node node, char letra) {
-        if (node == null) return false;
-        if (node.data != null && node.data == letra) {
-            node.data = null;
-            return true;
-        }
-        for (var child : node.children) {
-            if (eliminarNodo(child, letra)) return true;
-        }
-        return false;
     }
 
     private void guardarCSV() {

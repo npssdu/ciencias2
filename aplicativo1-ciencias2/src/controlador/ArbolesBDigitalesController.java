@@ -62,7 +62,7 @@ public class ArbolesBDigitalesController {
         char c = s.charAt(0);
         boolean ok = model.eliminar(c);
         view.getConsola().append(
-            ok ? "Eliminado '" + c + "'\n"
+            ok ? "Eliminado y nivelado '" + c + "'\n"
                : "No existe '" + c + "'\n");
         view.getTreePanel().repaint();
     }
